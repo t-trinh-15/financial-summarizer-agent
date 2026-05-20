@@ -1,0 +1,25 @@
+
+--- Test 1 ---
+Input:  POS DEBIT 0428 SQ *COFFEE BAR $4.75
+Output: You made a purchase at Coffee Bar for $4.75, processed through Square's payment system at a point-of-sale terminal.
+        merchant=Coffee Bar, amount=4.75, type=purchase
+
+--- Test 2 ---
+Input:  ACH WITHDRAWAL CHASE CREDIT CRD AUTOPAY 05/15 -$1,247.83
+Output: An automatic payment of $1,247.83 was transferred from your bank account to pay your Chase credit card bill on May 15th. This is a scheduled autopay transaction.
+        merchant=Chase Credit Card, amount=-1247.83, type=transfer
+
+--- Test 3 ---
+Input:  AMZN MKTP US*1A2B3C 04/22 $34.99
+Output: You made a purchase on Amazon's marketplace for $34.99 on April 22nd. This appears as "AMZN MKTP US" on your statement, which is how Amazon transactions are typically labeled.
+        merchant=Amazon, amount=34.99, type=purchase
+
+--- Test 4 ---
+Input:  ATM FEE 04/30 $3.50
+Output: You were charged a $3.50 fee for using an ATM, likely because it was out-of-network or operated by another bank.
+        merchant=ATM, amount=3.5, type=fee
+
+--- Test 5 ---
+Input:  DIRECT DEPOSIT PAYROLL ACME CORP 05/15 +$2,341.07
+Output: You received your payroll payment from ACME CORP via direct deposit. This is your salary or wages being deposited directly into your account.
+        merchant=ACME CORP, amount=2341.07, type=transfer
