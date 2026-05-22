@@ -1,0 +1,202 @@
+[
+    {
+      "filename": "0a0c397e-dd73-4705-85f4-e20ff09bcd07.jpg",
+      "date": "2021-10-23",
+      "merchant": "Vodafone",
+      "category": "telecom",
+      "amount": 245,
+      "currency": "EGP",
+      "description": "Vodafone Cash Deposit at Mall of Arabia store",
+      "notes": ""
+    },
+    {
+      "filename": "0a2f9bc7-a9c3-4baa-b5ff-cf8567565e37.jpg",
+      "date": "2022-12-26",
+      "merchant": "Spago",
+      "category": "food",
+      "amount": 845,
+      "currency": "EGP",
+      "description": "Restaurant meal at Spago — burgers, spaghetti, drinks, and coffee",
+      "notes": "currency inferred — not printed on receipt"
+    },
+    {
+      "filename": "00a5c857-f36a-4a31-a852-fda1110a0392.jpg",
+      "date": "2022-12-29",
+      "merchant": "McDonald's",
+      "category": "food",
+      "amount": 225,
+      "currency": "EGP",
+      "description": "McDonald's delivery order — Share Box meals with BigMac, Chicken Mac, Cheeseburger, fries, and Coca-Cola",
+      "notes": "currency inferred from Egyptian context (.eg domain, Cairo location)"
+    },
+    {
+      "filename": "00a6f020-aa1b-486d-828d-64ade631a89f.jpg",
+      "date": "2022-08-28",
+      "merchant": "Metro",
+      "category": "groceries",
+      "amount": 225.46,
+      "currency": "EGP",
+      "description": "Grocery shopping at Metro Madinaty — chips, cheese, noodles, snacks, plus delivery fee (10 items)",
+      "notes": "currency inferred — not printed on receipt; date format is MM/DD/YYYY (unusual for this dataset)"
+    },
+    {
+      "filename": "0a8b9392-48d7-4932-8cf1-0568c7a1529c.jpg",
+      "date": "2022-11-12",
+      "merchant": "Feteeret Dina Farms",
+      "category": "food",
+      "amount": 325,
+      "currency": "EGP",
+      "description": "Take-away pastries (feteer) from Dina Farms Tagamoa — mix cheese pie, basterma kiri pie, pogasha pie",
+      "notes": "currency inferred — not printed on receipt"
+    },
+    {
+      "filename": "0a8f9e19-5d90-487e-b289-397aee637a0d.jpg",
+      "date": "2022-10-19",
+      "merchant": "Gourmet",
+      "category": "groceries",
+      "amount": 46.5,
+      "currency": "EGP",
+      "description": "Convenience purchase at Gourmet Food Stores Sheikh Zayed — McVitie's digestives, Galaxy chocolate, Dasani water",
+      "notes": "currency shown as 'LE' on receipt (Livre Égyptienne / Egyptian Pound)"
+    },
+    {
+      "filename": "0a24f3e4-0b5e-4923-aefe-2bd632361238.jpg",
+      "date": "2022-04-26",
+      "merchant": "WE",
+      "category": "telecom",
+      "amount": 10,
+      "currency": "EGP",
+      "description": "WE (Telecom Egypt) mobile bill payment for postpaid service",
+      "notes": "currency shown as 'LE' on receipt"
+    },
+    {
+      "filename": "0a48aa56-847d-4c5c-987e-6b3a618308ce.jpg",
+      "date": "2022-06-25",
+      "merchant": "McDonald's",
+      "category": "food",
+      "amount": 174.41,
+      "currency": "EGP",
+      "description": "McDonald's breakfast delivery — Spicy Chicken McMuffin, Hash Browns, Chicken McMuffin",
+      "notes": "digital order confirmation (screenshot), not a printed receipt; currency shown as 'L.E.'"
+    },
+    {
+      "filename": "0a244c51-8917-474d-aef7-7c46b5a5236a.jpg",
+      "date": "2022-05-18",
+      "merchant": "Seha Pharmacy",
+      "category": "pharmacy",
+      "amount": 25.9,
+      "currency": "EGP",
+      "description": "Pharmacy purchase — IPEK cotton buds (100 pieces)",
+      "notes": "merchant name translated from Arabic (صيدليات صحة = Seha Pharmacies)"
+    },
+    {
+      "filename": "0a302d3b-7860-4aba-9dcb-215b76700370.jpg",
+      "date": "2022-10-06",
+      "merchant": "Charles & Keith",
+      "category": "clothing",
+      "amount": 595,
+      "currency": "EGP",
+      "description": "Purchase at Charles & Keith Alexandria City store, paid by debit Mastercard",
+      "notes": "card-payment slip only — no itemized list of products on this receipt"
+    },
+    {
+      "filename": "0a305f7d-5d09-4816-bf5e-3dc3093cdf28.jpg",
+      "date": "2022-12-23",
+      "merchant": "Miniso",
+      "category": "household",
+      "amount": 115,
+      "currency": "EGP",
+      "description": "Purchase at Miniso Madinaty store — one item (ZC005 Black, product not specified on receipt)",
+      "notes": "currency inferred — not printed; item identified only by internal goods code; category 'household' is best guess since Miniso sells mixed lifestyle goods"
+    },
+    {
+      "filename": "0a019782-5e7d-4d0e-a258-e3833896a1de.jpg",
+      "date": "2022-11-02",
+      "merchant": "Seha Pharmacy",
+      "category": "pharmacy",
+      "amount": 82.8,
+      "currency": "EGP",
+      "description": "Pharmacy payment at Seha — manually entered item (specific product not listed), GlobeMed customer",
+      "notes": "merchant name translated from Arabic (صيدليات صحة = Seha Pharmacies); item listed as 'Manual' with no product name; GlobeMed = insurance network"
+    },
+    {
+      "filename": "0a035831-f46c-4258-a839-bd2dc300b3d9.jpg",
+      "date": "2021-10-24",
+      "merchant": "Dunkin'",
+      "category": "food",
+      "amount": 73,
+      "currency": "EGP",
+      "description": "Dunkin' breakfast at Mobil Sheraton — dark roast coffee, donut, toasted turkey sandwich",
+      "notes": ""
+    },
+    {
+      "filename": "0a414987-a34b-4d67-859b-26017830839d.jpg",
+      "date": "2022-07-22",
+      "merchant": "Desoky & Soda",
+      "category": "food",
+      "amount": 249.9,
+      "currency": "EGP",
+      "description": "Cafe order at Desoky & Soda CFC — Cola Zero with refills, 2 Americanos, chips, and shisha",
+      "notes": "currency inferred — not printed on receipt"
+    },
+    {
+      "filename": "0aaecd8d-db16-4ccd-99b4-b1d46bc21229.jpg",
+      "date": "2022-08-30",
+      "merchant": "KFC",
+      "category": "food",
+      "amount": 54.99,
+      "currency": "EGP",
+      "description": "KFC dine-in meal at Americana Plaza — Twister Combo with sandwich, medium fries, Pepsi can",
+      "notes": "currency shown as 'L.E.' on receipt"
+    },
+    {
+      "filename": "00ad3b11-4d1a-47bb-a558-3047f050efde.jpg",
+      "date": "2022-05-08",
+      "merchant": "Pizza Hut",
+      "category": "food",
+      "amount": 70,
+      "currency": "EGP",
+      "description": "Pizza Hut take-out at Cattania — Lucky Meal with two small pan pizzas (Very Veggie, Super Supreme) and 1L Pepsi",
+      "notes": "merchant identified from logo (PH) and PHFEEDBACKEGY survey URL; currency shown as 'L.E.'"
+    },
+    {
+      "filename": "0aead667-a9e5-4749-9907-7febd7c6ab3d.jpg",
+      "date": "2022-04-30",
+      "merchant": "Circle K",
+      "category": "food",
+      "amount": 27,
+      "currency": "EGP",
+      "description": "Turkish coffee at Circle K Al Batrawi convenience store",
+      "notes": "currency shown as 'LE' on receipt"
+    },
+    {
+      "filename": "0af8f9d7-e163-4868-9925-9e78ac6c97a0.jpg",
+      "date": "2022-11-05",
+      "merchant": "Krispy Kreme",
+      "category": "food",
+      "amount": 80,
+      "currency": "EGP",
+      "description": "Krispy Kreme take-out at The Yard — Assorted Joy Box with Lotus Shell, Original Glazed, and Original Ring Custard doughnuts",
+      "notes": "currency shown as 'LE' on receipt"
+    },
+    {
+      "filename": "0afa1751-b201-44b3-8ee2-2053fbb78608.jpg",
+      "date": "2022-12-18",
+      "merchant": "Dunkin'",
+      "category": "food",
+      "amount": 55,
+      "currency": "EGP",
+      "description": "Dunkin' dine-in at Mall of Egypt — 3 donuts",
+      "notes": ""
+    },
+    {
+      "filename": "0b0b85aa-153e-4c6c-8f86-3e9552d1d721.jpg",
+      "date": "2022-06-30",
+      "merchant": "Brazilio",
+      "category": "food",
+      "amount": 116,
+      "currency": "EGP",
+      "description": "Cafe order at Brazilio Coffee Story Oyoun — 2 passion fruit mojitos, iced cappuccino, water (table of 2)",
+      "notes": "currency shown as 'L.E.' on receipt"
+    }
+  ]
