@@ -1,0 +1,32 @@
+[
+  {
+    "id": "demo_001",
+    "input_text": "Merchant: PAY*NETFLIX\nDate: 2026-06-01\nStandard Plan 14.99\nTotal: 14.99",
+    "expected": {
+      "merchant": "PAY*NETFLIX",
+      "total_amount": "14.99",
+      "date": "2026-06-01",
+      "category": "Entertainment / Subscription"
+    }
+  },
+  {
+    "id": "demo_002",
+    "input_text": "Merchant: STARBUCKS STORE 12345\nDate: 2026-06-02\nLatte 5.50\nSandwich 8.25\nTotal: 13.75",
+    "expected": {
+      "merchant": "STARBUCKS STORE 12345",
+      "total_amount": "13.75",
+      "date": "2026-06-02",
+      "category": "Food & Drink"
+    }
+  },
+  {
+    "id": "demo_003",
+    "input_text": "Vendor: Eversource\nDate: 2026-06-03\nElectricity Charge 72.40\nService Fee 4.60\nTotal: 77.00",
+    "expected": {
+      "merchant": "Eversource",
+      "total_amount": "77.00",
+      "date": "2026-06-03",
+      "category": "Utilities"
+    }
+  }
+]
