@@ -1,13 +1,14 @@
+from typing import Any, Dict
+
 import chainlit as cl
-from typing import Dict, Any
 
 
 async def call_agent_placeholder(input_type: str, content: str) -> Dict[str, Any]:
     """
     Placeholder function for Week 2 UI flow.
 
-    Helen/backend team can later replace this function with the real backend
-    agent call once the input/output schema is confirmed.
+    This function can later be replaced with the real backend agent call
+    once the input/output schema is confirmed.
     """
 
     return {
@@ -17,7 +18,7 @@ async def call_agent_placeholder(input_type: str, content: str) -> Dict[str, Any
         "category": "demo category",
         "explanation": (
             "This is a placeholder response from the UI layer. "
-            "The real backend agent will replace this function later."
+            "The real backend agent call can replace this function later."
         ),
         "confidence": 0.50,
         "raw_input": content,
@@ -29,10 +30,21 @@ def format_agent_response(result: Dict[str, Any]) -> str:
     Format the placeholder agent result for display in Chainlit.
     """
 
+    if result["input_type"] == "image_upload":
+        input_status = (
+            "A receipt image was uploaded and detected by the Chainlit UI. "
+            "OCR/backend image processing is not connected yet."
+        )
+    else:
+        input_status = "Pasted transaction text was received by the Chainlit UI."
+
     return f"""
 ## Transaction Analysis Result
 
 **Input Type:** {result["input_type"]}
+
+**Input Status:**  
+{input_status}
 
 **Merchant:** {result["merchant"]}  
 **Amount:** {result["amount"]}  
@@ -63,7 +75,7 @@ This Week 2 UI prototype supports:
 - Placeholder agent response
 - Structured response display
 
-The real backend agent connection will be added once the backend input/output format is confirmed.
+The backend agent connection will be added once the input/output format is confirmed.
 """
     ).send()
 
@@ -78,31 +90,18 @@ async def main(message: cl.Message):
     """
 
     if message.elements:
-        uploaded_files = []
-
-        for element in message.elements:
-            file_name = getattr(element, "name", "uploaded_file")
-            uploaded_files.append(file_name)
-
-        file_summary = ", ".join(uploaded_files)
-
-        await cl.Message(
-            content=f"""
-Processing uploaded file...
-
-Received file(s): {file_summary}
-
-OCR/backend image processing is not connected yet.  
-For now, this confirms that the Chainlit UI can detect uploaded receipt images.
-"""
-        ).send()
+        processing_msg = cl.Message(
+            content="Processing uploaded receipt image..."
+        )
+        await processing_msg.send()
 
         result = await call_agent_placeholder(
             input_type="image_upload",
-            content=file_summary,
+            content="uploaded receipt image",
         )
 
-        await cl.Message(content=format_agent_response(result)).send()
+        processing_msg.content = format_agent_response(result)
+        await processing_msg.update()
 
     else:
         text_input = message.content.strip()
@@ -113,17 +112,24 @@ For now, this confirms that the Chainlit UI can detect uploaded receipt images.
             ).send()
             return
 
-        await cl.Message(
-            content="""
-Processing pasted transaction text...
-
-Text input received. Sending it to the placeholder agent function.
-"""
-        ).send()
+        processing_msg = cl.Message(
+            content="Processing pasted transaction text..."
+        )
+        await processing_msg.send()
 
         result = await call_agent_placeholder(
             input_type="text_paste",
             content=text_input,
         )
 
-        await cl.Message(content=format_agent_response(result)).send()
+        processing_msg.content = format_agent_response(result)
+        await processing_msg.update()
+
+
+
+
+
+
+
+
+        
