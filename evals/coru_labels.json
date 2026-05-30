@@ -2,6 +2,7 @@
     {
       "filename": "0a0c397e-dd73-4705-85f4-e20ff09bcd07.jpg",
       "date": "2021-10-23",
+      "timestamp": "17:28:00",
       "merchant": "Vodafone",
       "category": "telecom",
       "amount": 245,
@@ -12,16 +13,18 @@
     {
       "filename": "0a2f9bc7-a9c3-4baa-b5ff-cf8567565e37.jpg",
       "date": "2022-12-26",
+      "timestamp": "05:28:40",
       "merchant": "Spago",
       "category": "food",
       "amount": 845,
       "currency": "EGP",
       "description": "Restaurant meal at Spago — burgers, spaghetti, drinks, and coffee",
-      "notes": "currency inferred — not printed on receipt"
+      "notes": "currency inferred — not printed on receipt; timestamp is Time Out (table closed)"
     },
     {
       "filename": "00a5c857-f36a-4a31-a852-fda1110a0392.jpg",
       "date": "2022-12-29",
+      "timestamp": "17:26:32",
       "merchant": "McDonald's",
       "category": "food",
       "amount": 225,
@@ -32,6 +35,7 @@
     {
       "filename": "00a6f020-aa1b-486d-828d-64ade631a89f.jpg",
       "date": "2022-08-28",
+      "timestamp": "16:55:01",
       "merchant": "Metro",
       "category": "groceries",
       "amount": 225.46,
@@ -42,6 +46,7 @@
     {
       "filename": "0a8b9392-48d7-4932-8cf1-0568c7a1529c.jpg",
       "date": "2022-11-12",
+      "timestamp": "18:32:00",
       "merchant": "Feteeret Dina Farms",
       "category": "food",
       "amount": 325,
@@ -52,6 +57,7 @@
     {
       "filename": "0a8f9e19-5d90-487e-b289-397aee637a0d.jpg",
       "date": "2022-10-19",
+      "timestamp": "12:28:41",
       "merchant": "Gourmet",
       "category": "groceries",
       "amount": 46.5,
@@ -62,6 +68,7 @@
     {
       "filename": "0a24f3e4-0b5e-4923-aefe-2bd632361238.jpg",
       "date": "2022-04-26",
+      "timestamp": "22:10:00",
       "merchant": "WE",
       "category": "telecom",
       "amount": 10,
@@ -72,16 +79,18 @@
     {
       "filename": "0a48aa56-847d-4c5c-987e-6b3a618308ce.jpg",
       "date": "2022-06-25",
+      "timestamp": "11:15:00",
       "merchant": "McDonald's",
       "category": "food",
       "amount": 174.41,
       "currency": "EGP",
       "description": "McDonald's breakfast delivery — Spicy Chicken McMuffin, Hash Browns, Chicken McMuffin",
-      "notes": "digital order confirmation (screenshot), not a printed receipt; currency shown as 'L.E.'"
+      "notes": "digital order confirmation (screenshot), not a printed receipt; currency shown as 'L.E.'; timestamp is start of delivery window"
     },
     {
       "filename": "0a244c51-8917-474d-aef7-7c46b5a5236a.jpg",
       "date": "2022-05-18",
+      "timestamp": "21:18:02",
       "merchant": "Seha Pharmacy",
       "category": "pharmacy",
       "amount": 25.9,
@@ -92,6 +101,7 @@
     {
       "filename": "0a302d3b-7860-4aba-9dcb-215b76700370.jpg",
       "date": "2022-10-06",
+      "timestamp": "12:03:34",
       "merchant": "Charles & Keith",
       "category": "clothing",
       "amount": 595,
@@ -102,6 +112,7 @@
     {
       "filename": "0a305f7d-5d09-4816-bf5e-3dc3093cdf28.jpg",
       "date": "2022-12-23",
+      "timestamp": "21:30:18",
       "merchant": "Miniso",
       "category": "household",
       "amount": 115,
@@ -112,6 +123,7 @@
     {
       "filename": "0a019782-5e7d-4d0e-a258-e3833896a1de.jpg",
       "date": "2022-11-02",
+      "timestamp": "19:29:22",
       "merchant": "Seha Pharmacy",
       "category": "pharmacy",
       "amount": 82.8,
@@ -122,6 +134,7 @@
     {
       "filename": "0a035831-f46c-4258-a839-bd2dc300b3d9.jpg",
       "date": "2021-10-24",
+      "timestamp": "08:09:50",
       "merchant": "Dunkin'",
       "category": "food",
       "amount": 73,
@@ -132,6 +145,7 @@
     {
       "filename": "0a414987-a34b-4d67-859b-26017830839d.jpg",
       "date": "2022-07-22",
+      "timestamp": "20:35:00",
       "merchant": "Desoky & Soda",
       "category": "food",
       "amount": 249.9,
@@ -142,6 +156,7 @@
     {
       "filename": "0aaecd8d-db16-4ccd-99b4-b1d46bc21229.jpg",
       "date": "2022-08-30",
+      "timestamp": "20:19:00",
       "merchant": "KFC",
       "category": "food",
       "amount": 54.99,
@@ -152,6 +167,7 @@
     {
       "filename": "00ad3b11-4d1a-47bb-a558-3047f050efde.jpg",
       "date": "2022-05-08",
+      "timestamp": "19:15:00",
       "merchant": "Pizza Hut",
       "category": "food",
       "amount": 70,
@@ -162,6 +178,7 @@
     {
       "filename": "0aead667-a9e5-4749-9907-7febd7c6ab3d.jpg",
       "date": "2022-04-30",
+      "timestamp": "01:20:07",
       "merchant": "Circle K",
       "category": "food",
       "amount": 27,
@@ -172,6 +189,7 @@
     {
       "filename": "0af8f9d7-e163-4868-9925-9e78ac6c97a0.jpg",
       "date": "2022-11-05",
+      "timestamp": "12:24:00",
       "merchant": "Krispy Kreme",
       "category": "food",
       "amount": 80,
@@ -182,6 +200,7 @@
     {
       "filename": "0afa1751-b201-44b3-8ee2-2053fbb78608.jpg",
       "date": "2022-12-18",
+      "timestamp": "17:22:55",
       "merchant": "Dunkin'",
       "category": "food",
       "amount": 55,
@@ -192,6 +211,7 @@
     {
       "filename": "0b0b85aa-153e-4c6c-8f86-3e9552d1d721.jpg",
       "date": "2022-06-30",
+      "timestamp": "19:52:00",
       "merchant": "Brazilio",
       "category": "food",
       "amount": 116,
