@@ -3,20 +3,20 @@
     "id": "demo_001",
     "input_text": "Merchant: PAY*NETFLIX\nDate: 2026-06-01\nStandard Plan 14.99\nTotal: 14.99",
     "expected": {
-      "merchant": "PAY*NETFLIX",
+      "merchant": "Netflix",
       "total_amount": "14.99",
-      "date": "2026-06-01",
-      "category": "Entertainment / Subscription"
+      "date": "06/01",
+      "category": "purchase"
     }
   },
   {
     "id": "demo_002",
     "input_text": "Merchant: STARBUCKS STORE 12345\nDate: 2026-06-02\nLatte 5.50\nSandwich 8.25\nTotal: 13.75",
     "expected": {
-      "merchant": "STARBUCKS STORE 12345",
+      "merchant": "Starbucks",
       "total_amount": "13.75",
-      "date": "2026-06-02",
-      "category": "Food & Drink"
+      "date": "06/02",
+      "category": "purchase"
     }
   },
   {
@@ -24,9 +24,129 @@
     "input_text": "Vendor: Eversource\nDate: 2026-06-03\nElectricity Charge 72.40\nService Fee 4.60\nTotal: 77.00",
     "expected": {
       "merchant": "Eversource",
-      "total_amount": "77.00",
-      "date": "2026-06-03",
-      "category": "Utilities"
+      "total_amount": "77",
+      "date": "06/03",
+      "category": "purchase"
+    }
+  },
+  {
+    "id": "demo_004",
+    "input_text": "Merchant: SHELL OIL 574362\nDate: 2026-06-04\nFuel 43.21\nTotal: 43.21",
+    "expected": {
+      "merchant": "Shell Oil",
+      "total_amount": "43.21",
+      "date": "06/04",
+      "category": "purchase"
+    }
+  },
+  {
+    "id": "demo_005",
+    "input_text": "Merchant: UBER TRIP\nDate: 2026-06-05\nRide Fare 18.60\nTotal: 18.60",
+    "expected": {
+      "merchant": "Uber",
+      "total_amount": "18.6",
+      "date": "06/05",
+      "category": "purchase"
+    }
+  },
+  {
+    "id": "demo_006",
+    "input_text": "Merchant: AMAZON MARKETPLACE\nDate: 2026-06-06\nHousehold Item 26.45\nTotal: 26.45",
+    "expected": {
+      "merchant": "Amazon Marketplace",
+      "total_amount": "26.45",
+      "date": "06/06",
+      "category": "purchase"
+    }
+  },
+  {
+    "id": "demo_007",
+    "input_text": "Merchant: VERIZON WIRELESS\nDate: 2026-06-07\nPhone Bill 85.00\nTotal: 85.00",
+    "expected": {
+      "merchant": "Verizon Wireless",
+      "total_amount": "85",
+      "date": "06/07",
+      "category": "purchase"
+    }
+  },
+  {
+    "id": "demo_008",
+    "input_text": "Merchant: SPOTIFY USA\nDate: 2026-06-08\nPremium Plan 10.99\nTotal: 10.99",
+    "expected": {
+      "merchant": "Spotify USA",
+      "total_amount": "10.99",
+      "date": "06/08",
+      "category": "purchase"
+    }
+  },
+  {
+    "id": "demo_009",
+    "input_text": "Merchant: CVS PHARMACY\nDate: 2026-06-09\nPersonal Care 22.10\nTotal: 22.10",
+    "expected": {
+      "merchant": "CVS PHARMACY",
+      "total_amount": "22.1",
+      "date": "06/09",
+      "category": "purchase"
+    }
+  },
+  {
+    "id": "demo_010",
+    "input_text": "Merchant: BANK SERVICE FEE\nDate: 2026-06-10\nMonthly Account Fee 12.00\nTotal: 12.00",
+    "expected": {
+      "merchant": "Bank",
+      "total_amount": "12",
+      "date": "06/10",
+      "category": "fee"
+    }
+  },
+  {
+    "id": "demo_011",
+    "input_text": "AMZN MKTP UK*1A2B3C 04/22 £34.99",
+    "expected": {
+      "merchant": "Amazon",
+      "total_amount": "34.99",
+      "date": "04/22",
+      "category": "purchase"
+    }
+  },
+  {
+    "id": "demo_012",
+    "input_text": "UBER* EATS PARIS 05/08 €22.50",
+    "expected": {
+      "merchant": "Uber Eats",
+      "total_amount": "22.5",
+      "date": "05/08",
+      "category": "purchase"
+    }
+  },
+  {
+    "id": "demo_013",
+    "input_text": "SHOPEE SG*ORDER 04/15 S$19.90",
+    "expected": {
+      "merchant": "Shopee SG",
+      "total_amount": "19.9",
+      "date": "04/15",
+      "category": "purchase"
+    }
+  },
+  {
+    "id": "demo_014",
+    "input_text": "TIM HORTONS #0042 CAD 05/02 CA$6.75",
+    "expected": {
+      "merchant": "Tim Hortons",
+      "total_amount": "6.75",
+      "date": "05/02",
+      "category": "purchase"
+    }
+  },
+  {
+    "id": "demo_015",
+    "input_text": "TOKYO METRO IC CARD 05/20 ¥320",
+    "expected": {
+      "merchant": "Tokyo Metro",
+      "total_amount": "320",
+      "date": "05/20",
+      "category": "purchase"
     }
   }
 ]

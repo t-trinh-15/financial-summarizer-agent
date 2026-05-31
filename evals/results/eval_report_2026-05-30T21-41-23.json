@@ -1,0 +1,129 @@
+{
+  "summary": {
+    "run_timestamp": "2026-05-30T21:41:23.298492",
+    "num_examples": 3,
+    "avg_merchant_accuracy": 0.333,
+    "avg_amount_accuracy": 0.667,
+    "avg_date_accuracy": 0.0,
+    "avg_category_accuracy": 0.0,
+    "avg_field_match_score": 0.25,
+    "avg_schema_completeness": 0.75,
+    "avg_explanation_quality_score": 0.9,
+    "all_explanations_safe": true,
+    "avg_latency_seconds": 2.701,
+    "p50_latency_seconds": 2.6615,
+    "p95_latency_seconds": 2.9725,
+    "total_eval_latency_seconds": 8.102,
+    "thresholds_passed": false,
+    "threshold_failures": [
+      {
+        "metric": "avg_merchant_accuracy",
+        "score": 0.333,
+        "threshold": 0.8
+      },
+      {
+        "metric": "avg_amount_accuracy",
+        "score": 0.667,
+        "threshold": 0.9
+      },
+      {
+        "metric": "avg_date_accuracy",
+        "score": 0.0,
+        "threshold": 0.75
+      },
+      {
+        "metric": "avg_category_accuracy",
+        "score": 0.0,
+        "threshold": 0.8
+      },
+      {
+        "metric": "avg_field_match_score",
+        "score": 0.25,
+        "threshold": 0.85
+      }
+    ]
+  },
+  "results": [
+    {
+      "id": "demo_001",
+      "status": "ok",
+      "merchant_accuracy": 0.0,
+      "amount_accuracy": 1.0,
+      "date_accuracy": 0.0,
+      "category_accuracy": 0.0,
+      "field_match_score": 0.25,
+      "schema_completeness": 0.75,
+      "unsupported_explanation_safe": true,
+      "explanation_quality_score": 1.0,
+      "latency_seconds": 2.9725,
+      "prediction": {
+        "merchant": "Netflix",
+        "total_amount": "14.99",
+        "date": "",
+        "category": "Purchase",
+        "plain_language_explanation": "Monthly subscription payment of $14.99 to Netflix for their Standard Plan.",
+        "confidence": "high"
+      },
+      "expected": {
+        "merchant": "PAY*NETFLIX",
+        "total_amount": "14.99",
+        "date": "2026-06-01",
+        "category": "Entertainment / Subscription"
+      }
+    },
+    {
+      "id": "demo_002",
+      "status": "ok",
+      "merchant_accuracy": 0.0,
+      "amount_accuracy": 1.0,
+      "date_accuracy": 0.0,
+      "category_accuracy": 0.0,
+      "field_match_score": 0.25,
+      "schema_completeness": 0.75,
+      "unsupported_explanation_safe": true,
+      "explanation_quality_score": 0.7,
+      "latency_seconds": 2.4679,
+      "prediction": {
+        "merchant": "Starbucks",
+        "total_amount": "13.75",
+        "date": "",
+        "category": "Purchase",
+        "plain_language_explanation": "You purchased a latte and a sandwich at Starbucks for a total of $13.75.",
+        "confidence": "high"
+      },
+      "expected": {
+        "merchant": "STARBUCKS STORE 12345",
+        "total_amount": "13.75",
+        "date": "2026-06-02",
+        "category": "Food & Drink"
+      }
+    },
+    {
+      "id": "demo_003",
+      "status": "ok",
+      "merchant_accuracy": 1.0,
+      "amount_accuracy": 0.0,
+      "date_accuracy": 0.0,
+      "category_accuracy": 0.0,
+      "field_match_score": 0.25,
+      "schema_completeness": 0.75,
+      "unsupported_explanation_safe": true,
+      "explanation_quality_score": 1.0,
+      "latency_seconds": 2.6615,
+      "prediction": {
+        "merchant": "Eversource",
+        "total_amount": "77.0",
+        "date": "",
+        "category": "Purchase",
+        "plain_language_explanation": "Payment to Eversource for electricity service totaling $77.00, which includes a $72.40 electricity charge and a $4.60 service fee.",
+        "confidence": "high"
+      },
+      "expected": {
+        "merchant": "Eversource",
+        "total_amount": "77.00",
+        "date": "2026-06-03",
+        "category": "Utilities"
+      }
+    }
+  ]
+}
