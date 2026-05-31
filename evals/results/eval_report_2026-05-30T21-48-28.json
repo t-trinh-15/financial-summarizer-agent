@@ -1,0 +1,448 @@
+{
+  "summary": {
+    "run_timestamp": "2026-05-30T21:48:28.760102",
+    "num_examples": 15,
+    "avg_merchant_accuracy": 0.467,
+    "avg_amount_accuracy": 0.533,
+    "avg_date_accuracy": 0.0,
+    "avg_category_accuracy": 0.933,
+    "avg_field_match_score": 0.483,
+    "avg_schema_completeness": 0.75,
+    "avg_explanation_quality_score": 0.84,
+    "all_explanations_safe": true,
+    "avg_latency_seconds": 3.249,
+    "p50_latency_seconds": 3.0033,
+    "p95_latency_seconds": 4.3035,
+    "total_eval_latency_seconds": 48.731,
+    "thresholds_passed": false,
+    "threshold_failures": [
+      {
+        "metric": "avg_merchant_accuracy",
+        "score": 0.467,
+        "threshold": 0.8
+      },
+      {
+        "metric": "avg_amount_accuracy",
+        "score": 0.533,
+        "threshold": 0.9
+      },
+      {
+        "metric": "avg_date_accuracy",
+        "score": 0.0,
+        "threshold": 0.75
+      },
+      {
+        "metric": "avg_field_match_score",
+        "score": 0.483,
+        "threshold": 0.85
+      }
+    ]
+  },
+  "results": [
+    {
+      "id": "demo_001",
+      "status": "ok",
+      "merchant_accuracy": 1.0,
+      "amount_accuracy": 1.0,
+      "date_accuracy": 0.0,
+      "category_accuracy": 1.0,
+      "field_match_score": 0.75,
+      "schema_completeness": 0.75,
+      "unsupported_explanation_safe": true,
+      "explanation_quality_score": 1.0,
+      "latency_seconds": 4.9662,
+      "prediction": {
+        "merchant": "Netflix",
+        "total_amount": "14.99",
+        "date": "",
+        "category": "Purchase",
+        "plain_language_explanation": "Monthly subscription payment to Netflix for the Standard Plan.",
+        "confidence": "high"
+      },
+      "expected": {
+        "merchant": "Netflix",
+        "total_amount": "14.99",
+        "date": "06/01",
+        "category": "purchase"
+      }
+    },
+    {
+      "id": "demo_002",
+      "status": "ok",
+      "merchant_accuracy": 1.0,
+      "amount_accuracy": 1.0,
+      "date_accuracy": 0.0,
+      "category_accuracy": 1.0,
+      "field_match_score": 0.75,
+      "schema_completeness": 0.75,
+      "unsupported_explanation_safe": true,
+      "explanation_quality_score": 0.7,
+      "latency_seconds": 2.7707,
+      "prediction": {
+        "merchant": "Starbucks",
+        "total_amount": "13.75",
+        "date": "",
+        "category": "Purchase",
+        "plain_language_explanation": "You purchased a latte and sandwich at Starbucks for a total of $13.75.",
+        "confidence": "high"
+      },
+      "expected": {
+        "merchant": "Starbucks",
+        "total_amount": "13.75",
+        "date": "06/02",
+        "category": "purchase"
+      }
+    },
+    {
+      "id": "demo_003",
+      "status": "ok",
+      "merchant_accuracy": 1.0,
+      "amount_accuracy": 0.0,
+      "date_accuracy": 0.0,
+      "category_accuracy": 0.0,
+      "field_match_score": 0.25,
+      "schema_completeness": 0.75,
+      "unsupported_explanation_safe": true,
+      "explanation_quality_score": 1.0,
+      "latency_seconds": 3.0033,
+      "prediction": {
+        "merchant": "Eversource",
+        "total_amount": "77.0",
+        "date": "",
+        "category": "Purchase",
+        "plain_language_explanation": "Electricity bill payment to Eversource for $77.00, which includes a $72.40 electricity charge and a $4.60 service fee.",
+        "confidence": "high"
+      },
+      "expected": {
+        "merchant": "Eversource",
+        "total_amount": "77.00",
+        "date": "06/03",
+        "category": "fee"
+      }
+    },
+    {
+      "id": "demo_004",
+      "status": "ok",
+      "merchant_accuracy": 0.0,
+      "amount_accuracy": 1.0,
+      "date_accuracy": 0.0,
+      "category_accuracy": 1.0,
+      "field_match_score": 0.5,
+      "schema_completeness": 0.75,
+      "unsupported_explanation_safe": true,
+      "explanation_quality_score": 0.7,
+      "latency_seconds": 4.1642,
+      "prediction": {
+        "merchant": "SHELL OIL 574362",
+        "total_amount": "43.21",
+        "date": "",
+        "category": "Purchase",
+        "plain_language_explanation": "You purchased $43.21 worth of fuel at a Shell gas station (location #574362) on June 4th, 2026.",
+        "confidence": "high"
+      },
+      "expected": {
+        "merchant": "Shell Oil",
+        "total_amount": "43.21",
+        "date": "06/04",
+        "category": "purchase"
+      }
+    },
+    {
+      "id": "demo_005",
+      "status": "ok",
+      "merchant_accuracy": 1.0,
+      "amount_accuracy": 0.0,
+      "date_accuracy": 0.0,
+      "category_accuracy": 1.0,
+      "field_match_score": 0.5,
+      "schema_completeness": 0.75,
+      "unsupported_explanation_safe": true,
+      "explanation_quality_score": 0.7,
+      "latency_seconds": 2.6085,
+      "prediction": {
+        "merchant": "Uber",
+        "total_amount": "18.6",
+        "date": "",
+        "category": "Purchase",
+        "plain_language_explanation": "You paid $18.60 for an Uber ride on June 5th, 2026.",
+        "confidence": "high"
+      },
+      "expected": {
+        "merchant": "Uber",
+        "total_amount": "18.60",
+        "date": "06/05",
+        "category": "purchase"
+      }
+    },
+    {
+      "id": "demo_006",
+      "status": "ok",
+      "merchant_accuracy": 0.0,
+      "amount_accuracy": 1.0,
+      "date_accuracy": 0.0,
+      "category_accuracy": 1.0,
+      "field_match_score": 0.5,
+      "schema_completeness": 0.75,
+      "unsupported_explanation_safe": true,
+      "explanation_quality_score": 0.7,
+      "latency_seconds": 2.4578,
+      "prediction": {
+        "merchant": "Amazon Marketplace",
+        "total_amount": "26.45",
+        "date": "",
+        "category": "Purchase",
+        "plain_language_explanation": "You purchased a household item from Amazon Marketplace for $26.45.",
+        "confidence": "high"
+      },
+      "expected": {
+        "merchant": "Amazon",
+        "total_amount": "26.45",
+        "date": "06/06",
+        "category": "purchase"
+      }
+    },
+    {
+      "id": "demo_007",
+      "status": "ok",
+      "merchant_accuracy": 0.0,
+      "amount_accuracy": 0.0,
+      "date_accuracy": 0.0,
+      "category_accuracy": 1.0,
+      "field_match_score": 0.25,
+      "schema_completeness": 0.75,
+      "unsupported_explanation_safe": true,
+      "explanation_quality_score": 1.0,
+      "latency_seconds": 3.4855,
+      "prediction": {
+        "merchant": "Verizon Wireless",
+        "total_amount": "85.0",
+        "date": "",
+        "category": "Purchase",
+        "plain_language_explanation": "Phone bill payment to Verizon Wireless for $85.00. This is a regular monthly service charge for your wireless phone plan.",
+        "confidence": "high"
+      },
+      "expected": {
+        "merchant": "Verizon",
+        "total_amount": "85.00",
+        "date": "06/07",
+        "category": "purchase"
+      }
+    },
+    {
+      "id": "demo_008",
+      "status": "ok",
+      "merchant_accuracy": 0.0,
+      "amount_accuracy": 1.0,
+      "date_accuracy": 0.0,
+      "category_accuracy": 1.0,
+      "field_match_score": 0.5,
+      "schema_completeness": 0.75,
+      "unsupported_explanation_safe": true,
+      "explanation_quality_score": 1.0,
+      "latency_seconds": 3.5794,
+      "prediction": {
+        "merchant": "SPOTIFY USA",
+        "total_amount": "10.99",
+        "date": "",
+        "category": "Purchase",
+        "plain_language_explanation": "Monthly subscription payment to Spotify for their Premium Plan service.",
+        "confidence": "high"
+      },
+      "expected": {
+        "merchant": "Spotify",
+        "total_amount": "10.99",
+        "date": "06/08",
+        "category": "purchase"
+      }
+    },
+    {
+      "id": "demo_009",
+      "status": "ok",
+      "merchant_accuracy": 1.0,
+      "amount_accuracy": 0.0,
+      "date_accuracy": 0.0,
+      "category_accuracy": 1.0,
+      "field_match_score": 0.5,
+      "schema_completeness": 0.75,
+      "unsupported_explanation_safe": true,
+      "explanation_quality_score": 0.7,
+      "latency_seconds": 2.357,
+      "prediction": {
+        "merchant": "CVS PHARMACY",
+        "total_amount": "22.1",
+        "date": "",
+        "category": "Purchase",
+        "plain_language_explanation": "You purchased personal care items at CVS Pharmacy for $22.10.",
+        "confidence": "high"
+      },
+      "expected": {
+        "merchant": "CVS Pharmacy",
+        "total_amount": "22.10",
+        "date": "06/09",
+        "category": "purchase"
+      }
+    },
+    {
+      "id": "demo_010",
+      "status": "ok",
+      "merchant_accuracy": 0.0,
+      "amount_accuracy": 0.0,
+      "date_accuracy": 0.0,
+      "category_accuracy": 1.0,
+      "field_match_score": 0.25,
+      "schema_completeness": 0.75,
+      "unsupported_explanation_safe": true,
+      "explanation_quality_score": 1.0,
+      "latency_seconds": 2.6584,
+      "prediction": {
+        "merchant": "Bank",
+        "total_amount": "12.0",
+        "date": "",
+        "category": "Fee",
+        "plain_language_explanation": "Your bank charged you a $12.00 monthly account maintenance fee on June 10th, 2026.",
+        "confidence": "high"
+      },
+      "expected": {
+        "merchant": "Bank Service Fee",
+        "total_amount": "12.00",
+        "date": "06/10",
+        "category": "fee"
+      }
+    },
+    {
+      "id": "demo_011",
+      "status": "ok",
+      "merchant_accuracy": 0.0,
+      "amount_accuracy": 1.0,
+      "date_accuracy": 0.0,
+      "category_accuracy": 1.0,
+      "field_match_score": 0.5,
+      "schema_completeness": 0.75,
+      "unsupported_explanation_safe": true,
+      "explanation_quality_score": 1.0,
+      "latency_seconds": 2.8683,
+      "prediction": {
+        "merchant": "Amazon UK",
+        "total_amount": "34.99",
+        "date": "",
+        "category": "Purchase",
+        "plain_language_explanation": "You made a purchase on Amazon UK for \u00a334.99 on April 22nd. This charge was processed through Amazon's marketplace.",
+        "confidence": "high"
+      },
+      "expected": {
+        "merchant": "Amazon",
+        "total_amount": "34.99",
+        "date": "04/22",
+        "category": "purchase"
+      }
+    },
+    {
+      "id": "demo_012",
+      "status": "ok",
+      "merchant_accuracy": 1.0,
+      "amount_accuracy": 0.0,
+      "date_accuracy": 0.0,
+      "category_accuracy": 1.0,
+      "field_match_score": 0.5,
+      "schema_completeness": 0.75,
+      "unsupported_explanation_safe": true,
+      "explanation_quality_score": 0.7,
+      "latency_seconds": 2.3913,
+      "prediction": {
+        "merchant": "Uber Eats",
+        "total_amount": "22.5",
+        "date": "",
+        "category": "Purchase",
+        "plain_language_explanation": "You ordered food delivery through Uber Eats in Paris on May 8th for \u20ac22.50.",
+        "confidence": "high"
+      },
+      "expected": {
+        "merchant": "Uber Eats",
+        "total_amount": "22.50",
+        "date": "05/08",
+        "category": "purchase"
+      }
+    },
+    {
+      "id": "demo_013",
+      "status": "ok",
+      "merchant_accuracy": 0.0,
+      "amount_accuracy": 0.0,
+      "date_accuracy": 0.0,
+      "category_accuracy": 1.0,
+      "field_match_score": 0.25,
+      "schema_completeness": 0.75,
+      "unsupported_explanation_safe": true,
+      "explanation_quality_score": 1.0,
+      "latency_seconds": 3.2388,
+      "prediction": {
+        "merchant": "Shopee Singapore",
+        "total_amount": "19.9",
+        "date": "",
+        "category": "Purchase",
+        "plain_language_explanation": "You made a purchase on Shopee Singapore on April 15th for S$19.90. This is an online marketplace transaction.",
+        "confidence": "high"
+      },
+      "expected": {
+        "merchant": "Shopee",
+        "total_amount": "19.90",
+        "date": "04/15",
+        "category": "purchase"
+      }
+    },
+    {
+      "id": "demo_014",
+      "status": "ok",
+      "merchant_accuracy": 0.0,
+      "amount_accuracy": 1.0,
+      "date_accuracy": 0.0,
+      "category_accuracy": 1.0,
+      "field_match_score": 0.5,
+      "schema_completeness": 0.75,
+      "unsupported_explanation_safe": true,
+      "explanation_quality_score": 0.7,
+      "latency_seconds": 4.3035,
+      "prediction": {
+        "merchant": "Tim Hortons #0042",
+        "total_amount": "6.75",
+        "date": "",
+        "category": "Purchase",
+        "plain_language_explanation": "You made a purchase at Tim Hortons (store #0042) on May 2nd for CA$6.75. This was likely for coffee, food, or beverages.",
+        "confidence": "high"
+      },
+      "expected": {
+        "merchant": "Tim Hortons",
+        "total_amount": "6.75",
+        "date": "05/02",
+        "category": "purchase"
+      }
+    },
+    {
+      "id": "demo_015",
+      "status": "ok",
+      "merchant_accuracy": 1.0,
+      "amount_accuracy": 1.0,
+      "date_accuracy": 0.0,
+      "category_accuracy": 1.0,
+      "field_match_score": 0.75,
+      "schema_completeness": 0.75,
+      "unsupported_explanation_safe": true,
+      "explanation_quality_score": 0.7,
+      "latency_seconds": 3.8758,
+      "prediction": {
+        "merchant": "Tokyo Metro",
+        "total_amount": "320",
+        "date": "",
+        "category": "Purchase",
+        "plain_language_explanation": "Paid \u00a5320 for a Tokyo Metro subway ride using an IC transit card on May 20th. This is a typical fare for public transportation in Tokyo.",
+        "confidence": "high"
+      },
+      "expected": {
+        "merchant": "Tokyo Metro",
+        "total_amount": "320",
+        "date": "05/20",
+        "category": "purchase"
+      }
+    }
+  ]
+}
