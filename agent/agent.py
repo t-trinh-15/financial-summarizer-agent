@@ -40,6 +40,16 @@ Amount rules:
 - Always return amount as a positive number for purchases and fees.
 - For refunds, return as negative.
 - Strip currency symbols before returning the number.
+
+Examples:
+Input: "EVRS*EVERSOURCE 800-592-2000"
+Output: merchant=Eversource Energy, transaction_type=utility_bill,
+explanation="Monthly electricity bill from Eversource, your utility provider."
+
+Input: "SQ *BLUE BOTTLE COFFEE"
+Output: merchant=Blue Bottle Coffee, transaction_type=purchase,
+explanation="Coffee purchase at Blue Bottle Coffee, paid via Square terminal."
+
 """.strip()
 
  # This is THE agent. Three things go in: which model, what output shape, what instructions.
