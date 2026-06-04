@@ -1,11 +1,26 @@
-import sys
+# ============================================================
+# 1. Imports and project path setup
+# ============================================================
+# This section imports required libraries and makes sure Python can find
+# project-level modules such as agent.agent when running this file from /ui.
+
 import os
+import sys
+from pathlib import Path
+from typing import Any, Dict, Optional
+
+import chainlit as cl
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from typing import Any, Dict
-from decimal import Decimal
-import chainlit as cl
 from agent.agent import translate
+
+
+# ============================================================
+# 2. Display constants
+# ============================================================
+# These dictionaries control how currencies and confidence levels are displayed
+# in the Chainlit UI.
 
 CURRENCY_SYMBOLS = {
     "AED": "د.إ",  "AFN": "؋",   "ALL": "L",    "AMD": "֏",   "ANG": "ƒ",
@@ -20,7 +35,7 @@ CURRENCY_SYMBOLS = {
     "GBP": "£",    "GEL": "₾",   "GHS": "₵",   "GIP": "£",   "GMD": "D",
     "GNF": "Fr",   "GTQ": "Q",    "GYD": "G$",   "HKD": "HK$", "HNL": "L",
     "HRK": "kn",   "HTG": "G",    "HUF": "Ft",   "IDR": "Rp",  "ILS": "₪",
-    "INR": "₹",   "IQD": "ع.د", "IRR": "﷼",   "ISK": "kr",  "JMD": "J$",
+    "INR": "₹",    "IQD": "ع.د", "IRR": "﷼",   "ISK": "kr",  "JMD": "J$",
     "JOD": "JD",   "JPY": "¥",    "KES": "KSh",  "KGS": "с",  "KHR": "៛",
     "KMF": "Fr",   "KPW": "₩",   "KRW": "₩",   "KWD": "KD",  "KYD": "CI$",
     "KZT": "₸",   "LAK": "₭",   "LBP": "£",    "LKR": "₨",  "LRD": "L$",
@@ -36,16 +51,167 @@ CURRENCY_SYMBOLS = {
     "STN": "Db",   "SVC": "₡",   "SYP": "£",    "SZL": "L",   "THB": "฿",
     "TJS": "SM",   "TMT": "T",    "TND": "DT",   "TOP": "T$",  "TRY": "₺",
     "TTD": "TT$",  "TWD": "NT$",  "TZS": "Sh",   "UAH": "₴",  "UGX": "Sh",
-    "USD": "$",    "UYU": "$U",   "UZS": "лв",  "VES": "Bs.S","VND": "₫",
+    "USD": "$",    "UYU": "$U",   "UZS": "лв",   "VES": "Bs.S", "VND": "₫",
     "VUV": "Vt",   "WST": "T",    "XAF": "Fr",   "XCD": "EC$", "XOF": "Fr",
     "XPF": "Fr",   "YER": "﷼",   "ZAR": "R",    "ZMW": "ZK",  "ZWL": "$",
 }
 
 CONFIDENCE_ICONS = {
-    "high":   "🟢 High",
+    "high": "🟢 High",
     "medium": "🟡 Medium",
-    "low":    "🔴 Low",
+    "low": "🔴 Low",
 }
+
+
+# ============================================================
+# 3. Input validation and user-friendly error messages
+# ============================================================
+# These helper functions prevent obviously unrelated inputs from being sent to
+# the agent and show friendly messages instead of technical errors.
+
+def looks_like_financial_input(text: str) -> bool:
+    """
+    Basic UI-side validation for pasted transaction text.
+
+    This is intentionally simple. The backend agent will still make the final
+    interpretation, but the UI can reject obviously unrelated or empty inputs.
+    """
+    if not text or not text.strip():
+        return False
+
+    lowered = text.lower()
+
+    financial_keywords = [
+        "$", "usd", "debit", "credit", "pos", "ach", "withdrawal",
+        "deposit", "payment", "fee", "refund", "autopay", "card",
+        "visa", "mastercard", "amex", "bank", "transaction",
+        "receipt", "total", "subtotal", "tax", "merchant"
+    ]
+
+    has_keyword = any(keyword in lowered for keyword in financial_keywords)
+    has_digit = any(char.isdigit() for char in text)
+
+    return has_keyword or has_digit
+
+
+def friendly_error_message(error_type: str = "general") -> str:
+    """
+    Return user-friendly error messages instead of exposing technical errors.
+    """
+    if error_type == "invalid_input":
+        return """
+I’m designed to analyze receipts and financial transactions.
+
+Please paste a transaction description, bank statement line, or upload a receipt image.
+"""
+
+    if error_type == "image_not_ready":
+        return """
+I received your uploaded file, but the OCR image-processing service is not connected yet.
+
+Please try pasting the receipt text directly for now, or try again once OCR integration is available.
+"""
+
+    if error_type == "agent_failure":
+        return """
+Sorry, I could not process this transaction right now.
+
+Please try again with a clearer transaction description, or try again later.
+"""
+
+    return """
+Sorry, something went wrong while processing your request.
+
+Please try again.
+"""
+
+
+# ============================================================
+# 4. OCR upload preparation
+# ============================================================
+# These functions prepare the image upload flow for future OCR integration.
+# Aayush can later connect the real OCR endpoint inside call_ocr_service().
+
+def validate_uploaded_file(file_path: Optional[str]) -> Optional[str]:
+    """
+    Basic UI-side validation for uploaded receipt files.
+
+    Returns an error message if the file is not suitable for OCR.
+    Returns None if the file passes the basic validation.
+    """
+    if not file_path:
+        return "I could not read the uploaded file. Please try uploading the receipt again."
+
+    path = Path(file_path)
+
+    allowed_extensions = {".png", ".jpg", ".jpeg", ".webp", ".pdf"}
+    if path.suffix.lower() not in allowed_extensions:
+        return (
+            "This file type is not supported for receipt OCR. "
+            "Please upload a receipt image such as PNG, JPG, JPEG, WEBP, or PDF."
+        )
+
+    max_size_mb = 10
+    if path.exists():
+        size_mb = path.stat().st_size / (1024 * 1024)
+        if size_mb > max_size_mb:
+            return (
+                f"This file is too large ({size_mb:.1f} MB). "
+                f"Please upload a file under {max_size_mb} MB."
+            )
+
+    return None
+
+
+async def call_ocr_service(file_path: str) -> str:
+    """
+    Placeholder wrapper for the OCR endpoint.
+
+    This function is intentionally prepared for future OCR integration.
+    Once the OCR endpoint is ready, replace this placeholder with an HTTP call
+    to the OCR service and return the extracted receipt text.
+    """
+    ocr_endpoint_url = os.getenv("OCR_ENDPOINT_URL")
+
+    if not ocr_endpoint_url:
+        raise RuntimeError("OCR endpoint is not configured.")
+
+    # TODO:
+    # Replace this placeholder with the real OCR HTTP request once the endpoint,
+    # request format, and response schema are confirmed.
+    #
+    # Expected future flow:
+    # 1. Send uploaded file to OCR endpoint
+    # 2. Receive extracted text
+    # 3. Return extracted text to Chainlit
+    #
+    # Example future return:
+    # return extracted_text
+
+    raise NotImplementedError("OCR endpoint integration is not implemented yet.")
+
+
+# ============================================================
+# 5. Conversation memory helpers
+# ============================================================
+# This section stores analyzed transactions in the Chainlit user session.
+# It prepares the app for future memory-based questions such as:
+# "How much did I spend on coffee this week?"
+
+def save_transaction_to_session(result: Dict[str, Any]) -> None:
+    """
+    Store analyzed transactions in Chainlit session memory.
+    """
+    transactions = cl.user_session.get("transactions", [])
+    transactions.append(result)
+    cl.user_session.set("transactions", transactions)
+
+
+# ============================================================
+# 6. Agent call wrapper
+# ============================================================
+# This function calls the backend financial translator agent and converts
+# the agent output into a dictionary that the UI can display.
 
 async def call_agent(input_type: str, content: str) -> Dict[str, Any]:
     """
@@ -59,42 +225,62 @@ async def call_agent(input_type: str, content: str) -> Dict[str, Any]:
 
     return {
         "input_type": input_type,
-        "merchant":   result.merchant or "—",
-        "amount":     amount_display,
-        "currency":   currency,
-        "date":       str(result.date) if hasattr(result, "date") and result.date else "—",
-        "category":   result.transaction_type.value.capitalize() if result.transaction_type else "—",
+        "merchant": result.merchant or "—",
+        "amount": amount_display,
+        "currency": currency,
+        "date": str(result.date) if hasattr(result, "date") and result.date else "—",
+        "category": result.transaction_type.value.capitalize() if result.transaction_type else "—",
         "explanation": result.plain_english_explanation or "—",
         "confidence": result.confidence.value if hasattr(result.confidence, "value") else str(result.confidence),
-        "raw_input":  content,
+        "raw_input": content,
     }
 
 
+# ============================================================
+# 7. Response formatting / translation card
+# ============================================================
+# This section formats the agent result into a readable transaction card
+# shown in the Chainlit chat.
+
 def format_agent_response(result: Dict[str, Any]) -> str:
     """
-    Format the agent result for display in Chainlit.
+    Format the agent result as a polished translation card for Chainlit.
     """
     input_type_label = "📝 Text" if result["input_type"] == "text_paste" else "🖼️ Image"
-    confidence_label = CONFIDENCE_ICONS.get(result["confidence"].lower(), result["confidence"])
+    confidence_value = str(result.get("confidence", "")).lower()
+    confidence_label = CONFIDENCE_ICONS.get(confidence_value, result.get("confidence", "—"))
 
-    return f"""## Transaction Analysis Result
+    return f"""
+## Transaction Translation Card
 
-**Input Type:** {input_type_label}
-**Merchant:** {result["merchant"]}
-**Amount:** {result["amount"]}
-**Date:** {result["date"]}
-**Transaction Type:** {result["category"]}
-**Confidence:** {confidence_label}
+| Field | Result |
+|---|---|
+| **Input Type** | {input_type_label} |
+| **Merchant** | {result.get("merchant", "—")} |
+| **Amount** | {result.get("amount", "—")} |
+| **Date** | {result.get("date", "—")} |
+| **Transaction Type** | {result.get("category", "—")} |
+| **Confidence** | {confidence_label} |
 
-**Explanation:**
-{result["explanation"]}
+### Plain-English Explanation
+{result.get("explanation", "—")}
 
-> **Raw Input:** {result["raw_input"]}
+---
+
+### Raw Input
+`{result.get("raw_input", "—")}`
 """
 
 
+# ============================================================
+# 8. Chainlit welcome message
+# ============================================================
+# This message is shown when the user first opens the Chainlit app.
+
 @cl.on_chat_start
 async def start():
+    cl.user_session.set("transactions", [])
+
     await cl.Message(
         content="""
 # 💰 Personal Finance Expense Tracker Assistant
@@ -118,6 +304,14 @@ Example transactions you can try:
     ).send()
 
 
+# ============================================================
+# 9. Main Chainlit message flow
+# ============================================================
+# This is the main UI controller:
+# - If the user uploads a file, use the image/OCR flow.
+# - If the user pastes text, validate it and send it to the agent.
+# - If anything fails, show a friendly error message.
+
 @cl.on_message
 async def main(message: cl.Message):
     """
@@ -133,20 +327,54 @@ async def main(message: cl.Message):
         )
         await processing_msg.send()
 
-        result = await call_agent(
-            input_type="image_upload",
-            content="uploaded receipt image",
-        )
+        try:
+            uploaded_file = message.elements[0]
+            file_path = getattr(uploaded_file, "path", None)
 
-        processing_msg.content = format_agent_response(result)
-        await processing_msg.update()
+            validation_error = validate_uploaded_file(file_path)
+            if validation_error:
+                processing_msg.content = validation_error
+                await processing_msg.update()
+                return
+
+            # OCR integration placeholder:
+            # Once the OCR endpoint is ready, this function should return extracted text.
+            extracted_text = await call_ocr_service(file_path)
+
+            result = await call_agent(
+                input_type="image_upload",
+                content=extracted_text,
+            )
+
+            save_transaction_to_session(result)
+
+            processing_msg.content = format_agent_response(result)
+            await processing_msg.update()
+
+        except NotImplementedError:
+            processing_msg.content = friendly_error_message("image_not_ready")
+            await processing_msg.update()
+
+        except RuntimeError:
+            processing_msg.content = friendly_error_message("image_not_ready")
+            await processing_msg.update()
+
+        except Exception:
+            processing_msg.content = friendly_error_message("agent_failure")
+            await processing_msg.update()
 
     else:
         text_input = message.content.strip()
 
         if not text_input:
             await cl.Message(
-                content="Please paste a transaction description or upload a receipt image."
+                content=friendly_error_message("invalid_input")
+            ).send()
+            return
+
+        if not looks_like_financial_input(text_input):
+            await cl.Message(
+                content=friendly_error_message("invalid_input")
             ).send()
             return
 
@@ -155,13 +383,20 @@ async def main(message: cl.Message):
         )
         await processing_msg.send()
 
-        result = await call_agent(
-            input_type="text_paste",
-            content=text_input,
-        )
+        try:
+            result = await call_agent(
+                input_type="text_paste",
+                content=text_input,
+            )
 
-        processing_msg.content = format_agent_response(result)
-        await processing_msg.update()
+            save_transaction_to_session(result)
+
+            processing_msg.content = format_agent_response(result)
+            await processing_msg.update()
+
+        except Exception:
+            processing_msg.content = friendly_error_message("agent_failure")
+            await processing_msg.update()
 
 
 
@@ -170,4 +405,5 @@ async def main(message: cl.Message):
 
 
 
-        
+
+            
