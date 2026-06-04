@@ -277,8 +277,11 @@ async def start():
     cl.user_session.set("transactions", [])
 
     await cl.Message(
-        content="""
-# 💰 Personal Finance Expense Summarizer Assistant
+        content="""# 💰 Personal Finance Expense Summarizer Assistant
+
+<div style="text-align: center; margin: 20px 0;">
+<img src="http://localhost:8000/public/logo_light.png" width="250"/>
+</div>
 
 Welcome! I help you make sense of your bank statements, receipts, and transactions — instantly.
 
@@ -297,8 +300,7 @@ Example transactions you can try:
 > `AMZN MKTP US*1A2B3C 04/22 $34.99`
 """
     ).send()
-
-
+    
 # ============================================================
 # 8. Main Chainlit message flow
 # ============================================================
