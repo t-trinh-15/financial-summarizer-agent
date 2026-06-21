@@ -1,389 +1,520 @@
+"""
+ui/chainlit_app.py
+Personal Finance Expense Summarizer — Chainlit UI
+"""
+
 import sys
 import os
+import re
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from pathlib import Path
-from typing import Any, Dict, Optional
-from decimal import Decimal
 import chainlit as cl
 from agent.agent import translate
+from shared.feedback import save_feedback
+
+try:
+    from ocr.document_ai import process_receipt, receipt_to_text
+    OCR_AVAILABLE = True
+except ImportError:
+    OCR_AVAILABLE = False
 
 
 # ============================================================
-# 1. Display constants
+# STARTUP CHECK
 # ============================================================
 
-CURRENCY_SYMBOLS = {
-    "AED": "د.إ",  "AFN": "؋",   "ALL": "L",    "AMD": "֏",   "ANG": "ƒ",
-    "AOA": "Kz",   "ARS": "$",    "AUD": "A$",   "AWG": "ƒ",   "AZN": "₼",
-    "BAM": "KM",   "BBD": "Bds$", "BDT": "৳",   "BGN": "лв",  "BHD": "BD",
-    "BIF": "Fr",   "BMD": "$",    "BND": "B$",   "BOB": "Bs.", "BRL": "R$",
-    "BSD": "$",    "BTN": "Nu",   "BWP": "P",    "BYN": "Br",  "BZD": "BZ$",
-    "CAD": "CA$",  "CDF": "Fr",   "CHF": "Fr",   "CLP": "$",   "CNY": "¥",
-    "COP": "$",    "CRC": "₡",   "CUP": "$",    "CVE": "$",   "CZK": "Kč",
-    "DJF": "Fr",   "DKK": "kr",   "DOP": "RD$",  "DZD": "دج", "EGP": "£",
-    "ERN": "Nfk",  "ETB": "Br",   "EUR": "€",    "FJD": "FJ$", "FKP": "£",
-    "GBP": "£",    "GEL": "₾",   "GHS": "₵",   "GIP": "£",   "GMD": "D",
-    "GNF": "Fr",   "GTQ": "Q",    "GYD": "G$",   "HKD": "HK$", "HNL": "L",
-    "HRK": "kn",   "HTG": "G",    "HUF": "Ft",   "IDR": "Rp",  "ILS": "₪",
-    "INR": "₹",   "IQD": "ع.د", "IRR": "﷼",   "ISK": "kr",  "JMD": "J$",
-    "JOD": "JD",   "JPY": "¥",    "KES": "KSh",  "KGS": "с",  "KHR": "៛",
-    "KMF": "Fr",   "KPW": "₩",   "KRW": "₩",   "KWD": "KD",  "KYD": "CI$",
-    "KZT": "₸",   "LAK": "₭",   "LBP": "£",    "LKR": "₨",  "LRD": "L$",
-    "LSL": "L",    "LYD": "LD",   "MAD": "MAD",  "MDL": "L",   "MGA": "Ar",
-    "MKD": "ден", "MMK": "K",    "MNT": "₮",   "MOP": "P",   "MRU": "UM",
-    "MUR": "₨",   "MVR": "Rf",   "MWK": "MK",   "MXN": "$",   "MYR": "RM",
-    "MZN": "MT",   "NAD": "N$",   "NGN": "₦",   "NIO": "C$",  "NOK": "kr",
-    "NPR": "₨",   "NZD": "NZ$",  "OMR": "﷼",   "PAB": "B/.", "PEN": "S/.",
-    "PGK": "K",    "PHP": "₱",   "PKR": "₨",   "PLN": "zł",  "PYG": "₲",
-    "QAR": "﷼",   "RON": "lei",  "RSD": "din",  "RUB": "₽",  "RWF": "Fr",
-    "SAR": "﷼",   "SBD": "SI$",  "SCR": "₨",   "SDG": "£",   "SEK": "kr",
-    "SGD": "S$",   "SHP": "£",    "SLL": "Le",   "SOS": "Sh",  "SRD": "$",
-    "STN": "Db",   "SVC": "₡",   "SYP": "£",    "SZL": "L",   "THB": "฿",
-    "TJS": "SM",   "TMT": "T",    "TND": "DT",   "TOP": "T$",  "TRY": "₺",
-    "TTD": "TT$",  "TWD": "NT$",  "TZS": "Sh",   "UAH": "₴",  "UGX": "Sh",
-    "USD": "$",    "UYU": "$U",   "UZS": "лв",  "VES": "Bs.S","VND": "₫",
-    "VUV": "Vt",   "WST": "T",    "XAF": "Fr",   "XCD": "EC$", "XOF": "Fr",
-    "XPF": "Fr",   "YER": "﷼",   "ZAR": "R",    "ZMW": "ZK",  "ZWL": "$",
-}
+if not os.getenv("ANTHROPIC_API_KEY"):
+    raise EnvironmentError(
+        "\n\n❌ ANTHROPIC_API_KEY is not set.\n"
+        "Add it to your .env file and restart the app.\n"
+        "Example: ANTHROPIC_API_KEY=sk-ant-your-key-here\n"
+    )
+
+
+# ============================================================
+# CONSTANTS
+# ============================================================
+
+SUPPORTED_IMAGE_TYPES = {".jpg", ".jpeg", ".png", ".webp", ".tiff", ".bmp", ".gif"}
+MAX_FILE_SIZE_MB = 10
+HISTORY_COMMAND = "history"
+
+FINANCIAL_KEYWORDS = [
+    "debit", "credit", "charge", "payment", "purchase", "withdrawal",
+    "deposit", "transfer", "refund", "reimbursement", "fee", "interest",
+    "pos", "ach", "atm", "wire", "zelle", "venmo", "paypal", "cashapp",
+    "autopay", "direct deposit", "check", "memo", "balance",
+    "total", "subtotal", "tax", "tip", "receipt", "invoice", "amount due",
+    "qty", "quantity", "unit price", "order",
+    # Currency symbols
+    "$", "€", "£", "¥", "₹", "₩", "₺", "₴", "₽", "฿", "₫", "₱", "₦",
+    "₲", "₡", "₵", "₸", "₼", "₾", "﷼", "؋", "৳", "₭", "₮", "₪",
+    # Major ISO 4217 codes
+    "usd", "eur", "gbp", "jpy", "cad", "aud", "sgd", "chf", "mxn", "inr",
+    "cny", "krw", "brl", "hkd", "nok", "sek", "dkk", "nzd", "zar", "rub",
+    "try", "pln", "thb", "idr", "myr", "php", "vnd", "egp", "aed", "sar",
+    "qar", "kwd", "bhd", "omr", "jod", "ils", "czk", "huf", "ron", "bgn",
+    "hrk", "isk", "cop", "ars", "clp", "pen", "uyu", "bob", "pyg", "gtq",
+    "hnl", "nio", "crc", "dop", "jmd", "ttd", "bbd", "xcd", "bsd", "kyd",
+    "ngn", "ghs", "kes", "tzs", "ugx", "etb", "mad", "tnd", "dzd", "lyd",
+    "sdg", "xof", "xaf", "mwk", "zmw", "bwp", "szl", "lsl", "mzn", "aoa",
+    "pkr", "lkr", "bdt", "npr", "mmk", "khr", "lak", "mnt", "afn", "irr",
+    "iqd", "syp", "lbp", "pab", "bzd", "gyd", "srd", "fkp", "shp", "awg",
+    "ang", "amd", "azn", "gel", "kzt", "kgs", "uzs", "tjs", "tmt", "mdl",
+    "all", "mkd", "rsd", "bam", "uah", "byr", "byn", "lvl", "ltl", "eek",
+    "amazon", "amzn", "walmart", "target", "costco", "starbucks", "sq *",
+    "doordash", "uber", "lyft", "netflix", "spotify", "apple", "google",
+]
+
+AMOUNT_PATTERN = re.compile(r"\d+[\.,]\d{2}")
+
+MONTHS_PATTERN = (
+    r"JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC|"
+    r"JANUARY|FEBRUARY|MARCH|APRIL|JUNE|JULY|AUGUST|"
+    r"SEPTEMBER|OCTOBER|NOVEMBER|DECEMBER"
+)
+
+# Date patterns ordered from most specific to least specific.
+# Each tuple is (compiled_regex, format_string_or_None).
+# format_string uses {g1}, {g2}, {g3} for group references.
+DATE_PATTERNS = [
+    # YYYY-MM-DD  e.g. 2024-05-15
+    (re.compile(r"\b(\d{4}-\d{2}-\d{2})\b"), None),
+    # YYYY/MM/DD  e.g. 2024/05/15
+    (re.compile(r"\b(\d{4}/\d{2}/\d{2})\b"), None),
+    # YYYYMMDD    e.g. 20240515
+    (re.compile(r"\b(20\d{2})(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])\b"), "{g1}-{g2}-{g3}"),
+    # DD-MMM-YYYY e.g. 15-MAY-2024 or 15 May 2024
+    (re.compile(rf"\b(\d{{1,2}})[-\s]({MONTHS_PATTERN})[-\s](\d{{4}})\b", re.IGNORECASE), "{g1} {g2} {g3}"),
+    # MMM-DD-YYYY e.g. May-15-2024 or May 15 2024
+    (re.compile(rf"\b({MONTHS_PATTERN})[-\s](\d{{1,2}})[-\s](\d{{4}})\b", re.IGNORECASE), "{g1} {g2} {g3}"),
+    # DDMMMYYYY   e.g. 15MAY2024
+    (re.compile(rf"\b(\d{{1,2}})({MONTHS_PATTERN})(\d{{4}})\b", re.IGNORECASE), "{g1} {g2} {g3}"),
+    # MMMYYYY     e.g. MAY2024
+    (re.compile(rf"\b({MONTHS_PATTERN})\s*(\d{{4}})\b", re.IGNORECASE), "{g1} {g2}"),
+    # MM/DD/YYYY or MM/DD  e.g. 05/15/2024 or 05/15
+    (re.compile(r"\b(\d{1,2}/\d{1,2}(?:/\d{2,4})?)\b"), None),
+]
 
 CONFIDENCE_ICONS = {
-    "high":   "🟢 High",
-    "medium": "🟡 Medium",
-    "low":    "🔴 Low",
+    "high":   "🟢",
+    "medium": "🟡",
+    "low":    "🔴",
 }
 
+CATEGORY_ICONS = {
+    "purchase":   "🛍️",
+    "transfer":   "🔄",
+    "fee":        "💸",
+    "refund":     "↩️",
+    "deposit":    "📥",
+    "withdrawal": "🏧",
+    "payment":    "💳",
+    "other":      "📄",
+}
+
+ERROR_TYPES = [
+    ("wrong_merchant",    "Wrong merchant name"),
+    ("wrong_amount",      "Wrong amount"),
+    ("wrong_currency",    "Wrong currency"),
+    ("wrong_date",        "Wrong date / timestamp"),
+    ("wrong_category",    "Wrong transaction type / category"),
+    ("wrong_explanation", "Incorrect explanation"),
+    ("everything_wrong",  "Everything wrong"),
+    ("other",             "Other feedback"),
+]
+
 
 # ============================================================
-# 2. Input validation and user-friendly error messages
+# HELPERS
 # ============================================================
-# Added from Alice's branch: guards against non-financial input and
-# provides friendly messages instead of raw errors.
 
 def looks_like_financial_input(text: str) -> bool:
-    """
-    Basic UI-side validation for pasted transaction text.
-
-    This is intentionally simple. The backend agent will still make the final
-    interpretation, but the UI can reject obviously unrelated or empty inputs.
-    """
-    if not text or not text.strip():
-        return False
-
     lowered = text.lower()
-
-    financial_keywords = [
-        # Payment networks & card brands
-        "$", "usd", "debit", "credit", "pos", "ach", "withdrawal",
-        "deposit", "payment", "fee", "refund", "autopay", "card",
-        "visa", "mastercard", "amex", "discover", "paypal", "venmo",
-        "zelle", "apple pay", "google pay", "stripe", "square", "bank",
-        "transaction", "receipt", "total", "subtotal", "tax", "merchant",
-
-        # Transaction type keywords
-        "transfer", "wire", "purchase", "charge", "bill", "invoice",
-        "subscription", "installment", "pending", "cleared", "posted",
-        "returned", "declined", "reversed", "adjustment",
-
-        # Bank/account terms
-        "checking", "savings", "account", "balance", "statement",
-        "overdraft", "interest", "minimum payment", "due", "routing", "credit"
-
-        # Receipt-specific
-        "qty", "quantity", "item", "order", "tip", "gratuity",
-        "cash", "change", "store", "outlet",
-
-        # All ISO 4217 currency codes (e.g. "eur", "gbp", "jpy")
-        *[code.lower() for code in CURRENCY_SYMBOLS.keys()],
-
-        # All unique currency symbols (e.g. "€", "£", "¥", "₹")
-        *set(CURRENCY_SYMBOLS.values()),
-    ]
-
-    has_keyword = any(keyword in lowered for keyword in financial_keywords)
-    has_digit = any(char.isdigit() for char in text)
-
-    return has_keyword or has_digit
+    if AMOUNT_PATTERN.search(text):
+        return True
+    return any(kw in lowered for kw in FINANCIAL_KEYWORDS)
 
 
-def friendly_error_message(error_type: str = "general") -> str:
+def format_amount(amount) -> str:
+    """Always show exactly two decimal places for financial amounts."""
+    try:
+        return f"{float(amount):.2f}"
+    except Exception:
+        return str(amount)
+
+
+def clean_enum(value) -> str:
     """
-    Return user-friendly error messages instead of exposing technical errors.
+    Strip enum class prefix from string representation.
+    e.g. 'Transaction.Purchase' -> 'Purchase'
+         'Confidence.High'      -> 'High'
     """
-    if error_type == "invalid_input":
-        return """
-I'm designed to analyze receipts and financial transactions.
-
-Please paste a transaction description, bank statement line, or upload a receipt image.
-"""
-
-    if error_type == "image_not_ready":
-        return """
-I received your uploaded file, but the OCR image-processing service is not connected yet.
-
-Please try pasting the receipt text directly for now, or try again once OCR integration is available.
-"""
-
-    if error_type == "agent_failure":
-        return """
-Sorry, I could not process this transaction right now.
-
-Please try again with a clearer transaction description, or try again later.
-"""
-
-    return """
-Sorry, something went wrong while processing your request.
-
-Please try again.
-"""
+    return str(value).split(".")[-1].title()
 
 
-# ============================================================
-# 3. OCR upload preparation
-# ============================================================
-# Added from Alice's branch: validates uploaded files and provides a
-# clean placeholder for Aayush to wire in the real OCR endpoint.
+def get_confidence_icon(confidence) -> str:
+    key = str(confidence).split(".")[-1].lower()
+    return CONFIDENCE_ICONS.get(key, "⚪")
 
-def validate_uploaded_file(file_path: Optional[str]) -> Optional[str]:
+
+def get_category_icon(category) -> str:
+    key = str(category).split(".")[-1].lower()
+    return CATEGORY_ICONS.get(key, "📄")
+
+
+def extract_date_from_raw(raw_input: str, explanation: str) -> str:
     """
-    Basic UI-side validation for uploaded receipt files.
-
-    Returns an error message if the file is not suitable for OCR.
-    Returns None if the file passes basic validation.
+    Try raw input first, then fall back to the explanation.
+    Handles all common bank date formats:
+      YYYY-MM-DD, YYYY/MM/DD, YYYYMMDD,
+      DD-MMM-YYYY, MMM-DD-YYYY, DDMMMYYYY,
+      MMMYYYY, MM/DD/YYYY, MM/DD
     """
-    if not file_path:
-        return "I could not read the uploaded file. Please try uploading the receipt again."
+    for text in [raw_input, explanation]:
+        for pattern, fmt in DATE_PATTERNS:
+            match = pattern.search(text)
+            if match:
+                if fmt is None:
+                    return match.group(1).title() if not match.group(1)[0].isdigit() else match.group(1)
+                # Fill in format template with matched groups
+                result = fmt
+                for i, g in enumerate(match.groups(), 1):
+                    result = result.replace(f"{{g{i}}}", str(g).title() if g and not g[0].isdigit() else str(g))
+                return result
+    return "—"
 
-    path = Path(file_path)
 
-    allowed_extensions = {".png", ".jpg", ".jpeg", ".webp", ".pdf"}
-    if path.suffix.lower() not in allowed_extensions:
-        return (
-            "This file type is not supported for receipt OCR. "
-            "Please upload a receipt image such as PNG, JPG, JPEG, WEBP, or PDF."
+def format_agent_response(result, raw_input: str) -> str:
+    confidence_icon = get_confidence_icon(result.confidence)
+    category_icon   = get_category_icon(result.transaction_type)
+    date_str        = extract_date_from_raw(raw_input, result.plain_english_explanation)
+    amount_str      = format_amount(result.amount)
+    category_str    = clean_enum(result.transaction_type)
+    confidence_str  = clean_enum(result.confidence)
+
+    return (
+        f"### {category_icon} Transaction Summary\n\n"
+        f"| Field | Value |\n"
+        f"|---|---|\n"
+        f"| **Merchant** | {result.merchant} |\n"
+        f"| **Amount** | {result.currency} {amount_str} |\n"
+        f"| **Date** | {date_str} |\n"
+        f"| **Category** | {category_str} |\n"
+        f"| **Confidence** | {confidence_icon} {confidence_str} |\n\n"
+        f"**Plain-English Explanation:**\n\n{result.plain_english_explanation}"
+    )
+
+
+def save_transaction_to_session(result, raw_input: str):
+    history = cl.user_session.get("transaction_history", [])
+    history.append({
+        "raw_input":   raw_input[:120],
+        "merchant":    result.merchant,
+        "amount":      format_amount(result.amount),
+        "currency":    result.currency,
+        "category":    clean_enum(result.transaction_type),
+        "confidence":  clean_enum(result.confidence),
+        "explanation": result.plain_english_explanation,
+    })
+    cl.user_session.set("transaction_history", history)
+
+
+def format_history() -> str:
+    history = cl.user_session.get("transaction_history", [])
+    if not history:
+        return "No transactions yet this session."
+    lines = ["### 📋 Session History\n"]
+    for i, t in enumerate(history, 1):
+        lines.append(
+            f"**{i}.** {t['merchant']} · {t['currency']} {t['amount']} "
+            f"· {t['category']} · {t['confidence']}\n"
+            f"> _{t['raw_input']}_\n"
         )
-
-    max_size_mb = 10
-    if path.exists():
-        size_mb = path.stat().st_size / (1024 * 1024)
-        if size_mb > max_size_mb:
-            return (
-                f"This file is too large ({size_mb:.1f} MB). "
-                f"Please upload a file under {max_size_mb} MB."
-            )
-
-    return None
+    return "\n".join(lines)
 
 
 async def call_ocr_service(file_path: str) -> str:
-    """
-    Placeholder wrapper for the OCR endpoint.
-
-    Once the OCR endpoint is ready, replace this placeholder with an HTTP call
-    to the OCR service and return the extracted receipt text.
-    """
-    ocr_endpoint_url = os.getenv("OCR_ENDPOINT_URL")
-
-    if not ocr_endpoint_url:
-        raise RuntimeError("OCR endpoint is not configured.")
-
-    # TODO:
-    # Replace this placeholder with the real OCR HTTP request once the endpoint,
-    # request format, and response schema are confirmed with Aayush.
-    #
-    # Expected future flow:
-    # 1. Send uploaded file to OCR endpoint
-    # 2. Receive extracted text
-    # 3. Return extracted text to Chainlit
-
-    raise NotImplementedError("OCR endpoint integration is not implemented yet.")
+    if not OCR_AVAILABLE:
+        raise RuntimeError("OCR module not available. Check ocr/document_ai.py.")
+    receipt_data = process_receipt(file_path)
+    return receipt_to_text(receipt_data)
 
 
 # ============================================================
-# 4. Conversation memory helpers
-# ============================================================
-# Added from Alice's branch: stores analyzed transactions in the Chainlit
-# user session for future multi-transaction summaries.
-
-def save_transaction_to_session(result: Dict[str, Any]) -> None:
-    """
-    Store analyzed transactions in Chainlit session memory.
-    """
-    transactions = cl.user_session.get("transactions", [])
-    transactions.append(result)
-    cl.user_session.set("transactions", transactions)
-
-
-# ============================================================
-# 5. Agent call wrapper
-# ============================================================
-
-async def call_agent(input_type: str, content: str) -> Dict[str, Any]:
-    """
-    Calls the real financial translator agent.
-    """
-    result = translate(content)
-
-    currency = (result.currency or "USD").upper()
-    symbol = CURRENCY_SYMBOLS.get(currency, currency + " ")
-    amount_display = f"{symbol}{result.amount}" if result.amount else "—"
-
-    return {
-        "input_type": input_type,
-        "merchant":   result.merchant or "—",
-        "amount":     amount_display,
-        "currency":   currency,
-        "date":       str(result.date) if hasattr(result, "date") and result.date else "—",
-        "category":   result.transaction_type.value.capitalize() if result.transaction_type else "—",
-        "explanation": result.plain_english_explanation or "—",
-        "confidence": result.confidence.value if hasattr(result.confidence, "value") else str(result.confidence),
-        "raw_input":  content,
-    }
-
-
-# ============================================================
-# 6. Response formatting
-# ============================================================
-
-def format_agent_response(result: Dict[str, Any]) -> str:
-    """
-    Format the agent result for display in Chainlit.
-    """
-    input_type_label = "📝 Text" if result["input_type"] == "text_paste" else "🖼️ Image"
-    confidence_label = CONFIDENCE_ICONS.get(result["confidence"].lower(), result["confidence"])
-
-    return f"""## Transaction Summary
-
-**Input Type:** {input_type_label}
-**Merchant:** {result["merchant"]}
-**Amount:** {result["amount"]}
-**Date:** {result["date"]}
-**Transaction Type:** {result["category"]}
-**Confidence:** {confidence_label}
-
-**Explanation:**
-{result["explanation"]}
-
-> **Raw Input:** {result["raw_input"]}
-"""
-
-
-# ============================================================
-# 7. Chainlit welcome message
+# LIFECYCLE
 # ============================================================
 
 @cl.on_chat_start
-async def start():
-    cl.user_session.set("transactions", [])
+async def on_chat_start():
+    cl.user_session.set("transaction_history", [])
+    cl.user_session.set("pending_feedback", None)
+
+    # 1. Title
+    await cl.Message(
+        content="# 💰 Personal Finance Expense Summarizer Assistant",
+    ).send()
+
+    # 2. Logo
+    logo_path = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "..", "public", "logo_light.png")
+    )
+    if os.path.exists(logo_path):
+        await cl.Message(
+            content="",
+            elements=[
+                cl.Image(path=logo_path, name="logo", display="inline", size="small")
+            ],
+        ).send()
+
+    # 3. Privacy disclaimer
+    await cl.Message(
+        content=(
+            "⚠️ **Privacy & Confidentiality Notice**\n\n"
+            "This tool is for **personal and educational use only** and is not a substitute "
+            "for professional financial or legal advice.\n\n"
+            "- **Do not** enter full account numbers, passwords, PINs, SSNs, or full card numbers\n"
+            "- Transactions are processed **in-session only** and are not stored on any server\n"
+            "- Results may not be 100% accurate — always verify with your financial institution\n\n"
+            "_By continuing, you acknowledge this notice._"
+        ),
+        author="System",
+    ).send()
+
+    # 4. Welcome body
+    ocr_status = (
+        "- 🖼️ **Upload a receipt image** and I will extract the details for you"
+        if OCR_AVAILABLE else
+        "- 🖼️ **Image upload** is unavailable — paste transaction text directly for now"
+    )
 
     await cl.Message(
-        content="""# 💰 Personal Finance Expense Summarizer Assistant
-
-<div style="text-align: center; margin: 20px 0;">
-<img src="http://localhost:8000/public/logo_light.png" width="250"/>
-</div>
-
-Welcome! I help you make sense of your bank statements, receipts, and transactions — instantly.
+        content=f"""Welcome! I help you make sense of your bank statements, receipts, and transactions — instantly.
 
 Here is what I can do:
 - 📝 **Paste a transaction** from your bank statement and I will translate it into plain English
-- 🖼️ **Upload a receipt image** and I will extract the details for you
+{ocr_status}
 - 💱 **Recognize currencies** from around the world and display the correct symbol
 - 📊 **Categorize your spending** — purchases, transfers, fees, refunds, and more
 - 🎯 **Rate my confidence** so you always know how certain I am
 
 **To get started, paste a transaction below or upload a receipt image.**
 
+Type `history` at any time to see your transactions from this session.
+
 Example transactions you can try:
 > `POS DEBIT 0428 SQ *COFFEE BAR $4.75`
 > `ACH WITHDRAWAL CHASE CREDIT CRD AUTOPAY 05/15 -$1,247.83`
 > `AMZN MKTP US*1A2B3C 04/22 $34.99`
-"""
+""",
     ).send()
-    
+
+
 # ============================================================
-# 8. Main Chainlit message flow
+# MESSAGE HANDLER
 # ============================================================
 
 @cl.on_message
 async def main(message: cl.Message):
-    """
-    Main Chainlit message handler.
 
-    If the user uploads a file, validate it and attempt OCR extraction.
-    If the user pastes text, validate it and send it to the agent.
-    In both cases, show a friendly error message on failure.
-    """
+    # ── Handle pending free-text feedback ──
+    pending = cl.user_session.get("pending_feedback")
+    if pending:
+        correction = message.content.strip()
+        if correction.lower() == "skip":
+            save_feedback(
+                verdict="rejected",
+                error_type=pending.get("error_type"),
+                user_correction=None,
+                raw_input=pending.get("raw_input", ""),
+                result=pending.get("result"),
+            )
+            cl.user_session.set("pending_feedback", None)
+            await cl.Message(
+                content="✅ Error type logged. No correction recorded.",
+                author="System",
+            ).send()
+            return
 
+        word_count = len(correction.split())
+        if word_count > 100:
+            await cl.Message(
+                content="✏️ Please keep your correction under 100 words.",
+                author="System",
+            ).send()
+            return
+
+        save_feedback(
+            verdict="rejected",
+            error_type=pending.get("error_type"),
+            user_correction=correction,
+            raw_input=pending.get("raw_input", ""),
+            result=pending.get("result"),
+        )
+        cl.user_session.set("pending_feedback", None)
+        await cl.Message(
+            content="✅ Feedback saved. Thank you for helping us improve!",
+            author="System",
+        ).send()
+        return
+
+    # ── History command ──
+    if message.content.strip().lower() == HISTORY_COMMAND:
+        await cl.Message(content=format_history()).send()
+        return
+
+    # ── Image upload ──
     if message.elements:
-        processing_msg = cl.Message(content="Processing uploaded receipt image...")
-        await processing_msg.send()
-
-        try:
-            uploaded_file = message.elements[0]
-            file_path = getattr(uploaded_file, "path", None)
-
-            validation_error = validate_uploaded_file(file_path)
-            if validation_error:
-                processing_msg.content = validation_error
-                await processing_msg.update()
+        for element in message.elements:
+            if not hasattr(element, "path") or not element.path:
+                continue
+            ext = os.path.splitext(element.name or "")[1].lower()
+            if ext not in SUPPORTED_IMAGE_TYPES:
+                await cl.Message(
+                    content=f"❌ Unsupported file type `{ext}`. Please upload a JPG, PNG, WEBP, or TIFF.",
+                ).send()
+                return
+            size_mb = os.path.getsize(element.path) / (1024 * 1024)
+            if size_mb > MAX_FILE_SIZE_MB:
+                await cl.Message(
+                    content=f"❌ File too large ({size_mb:.1f} MB). Please upload under {MAX_FILE_SIZE_MB} MB.",
+                ).send()
                 return
 
-            # OCR integration placeholder:
-            # Once Aayush's OCR endpoint is ready, this returns extracted text.
-            extracted_text = await call_ocr_service(file_path)
+            async with cl.Step(name="Reading receipt with OCR..."):
+                try:
+                    extracted_text = await call_ocr_service(element.path)
+                except Exception as e:
+                    await cl.Message(
+                        content=f"❌ OCR failed: {str(e)}\n\nPlease paste the transaction text manually.",
+                    ).send()
+                    return
 
-            result = await call_agent(
-                input_type="image_upload",
-                content=extracted_text,
-            )
+            if not extracted_text or not extracted_text.strip():
+                await cl.Message(
+                    content=(
+                        "🤔 I couldn't read any text from that image.\n\n"
+                        "Make sure the image is clear and well-lit, or paste the transaction text directly."
+                    ),
+                ).send()
+                return
 
-            save_transaction_to_session(result)
+            if not looks_like_financial_input(extracted_text):
+                await cl.Message(
+                    content=(
+                        "🤔 That image doesn't appear to contain financial information.\n\n"
+                        "Please upload a receipt, invoice, or bank statement screenshot."
+                    ),
+                ).send()
+                return
 
-            processing_msg.content = format_agent_response(result)
-            await processing_msg.update()
+            await _process_transaction(extracted_text, source="📷 image upload")
+        return
 
-        except NotImplementedError:
-            processing_msg.content = friendly_error_message("image_not_ready")
-            await processing_msg.update()
+    # ── Text input ──
+    user_text = message.content.strip()
+    if not user_text:
+        return
 
-        except RuntimeError:
-            processing_msg.content = friendly_error_message("image_not_ready")
-            await processing_msg.update()
+    if not looks_like_financial_input(user_text):
+        await cl.Message(
+            content=(
+                "🤔 That doesn't look like a financial transaction.\n\n"
+                "Try pasting a bank statement line or uploading a receipt image.\n\n"
+                "**Examples:**\n"
+                "> `POS DEBIT 0428 SQ *COFFEE BAR $4.75`\n"
+                "> `ACH WITHDRAWAL CHASE CREDIT CRD AUTOPAY 05/15 -$1,247.83`"
+            ),
+        ).send()
+        return
 
-        except Exception:
-            processing_msg.content = friendly_error_message("agent_failure")
-            await processing_msg.update()
+    await _process_transaction(user_text, source="📝 text")
 
-    else:
-        text_input = message.content.strip()
 
-        if not text_input:
-            await cl.Message(
-                content=friendly_error_message("invalid_input")
-            ).send()
-            return
+# ============================================================
+# CORE PROCESSING
+# ============================================================
 
-        if not looks_like_financial_input(text_input):
-            await cl.Message(
-                content=friendly_error_message("invalid_input")
-            ).send()
-            return
-
-        processing_msg = cl.Message(content="Processing pasted transaction text...")
-        await processing_msg.send()
-
+async def _process_transaction(raw_input: str, source: str):
+    async with cl.Step(name=f"Analyzing transaction ({source})..."):
         try:
-            result = await call_agent(
-                input_type="text_paste",
-                content=text_input,
-            )
+            result = translate(raw_input)
+        except Exception as e:
+            await cl.Message(
+                content=f"❌ Agent error: {str(e)}\n\nPlease try again or rephrase your input.",
+            ).send()
+            return
 
-            save_transaction_to_session(result)
+    save_transaction_to_session(result, raw_input)
 
-            processing_msg.content = format_agent_response(result)
-            await processing_msg.update()
+    response_text = format_agent_response(result, raw_input)
 
-        except Exception:
-            processing_msg.content = friendly_error_message("agent_failure")
-            await processing_msg.update()
+    actions = [
+        cl.Action(name="accept", label="✅ Accept", value="accept", payload={"value": "accept"}),
+        cl.Action(name="reject", label="❌ Reject", value="reject", payload={"value": "reject"}),
+    ]
+
+    await cl.Message(content=response_text, actions=actions).send()
+
+    cl.user_session.set("last_result", {"result": result, "raw_input": raw_input})
+
+
+# ============================================================
+# FEEDBACK CALLBACKS
+# ============================================================
+
+@cl.action_callback("accept")
+async def on_accept(action: cl.Action):
+    stored = cl.user_session.get("last_result", {})
+    save_feedback(
+        verdict="accepted",
+        error_type=None,
+        user_correction=None,
+        raw_input=stored.get("raw_input", ""),
+        result=stored.get("result"),
+    )
+    await cl.Message(
+        content="✅ Got it! Glad the summary looked right. Feedback saved.",
+        author="System",
+    ).send()
+
+
+@cl.action_callback("reject")
+async def on_reject(action: cl.Action):
+    error_buttons = [
+        cl.Action(
+            name=f"error_{code}",
+            label=label,
+            value=code,
+            payload={"value": code},
+        )
+        for code, label in ERROR_TYPES
+    ]
+    await cl.Message(
+        content="❌ What was wrong with the response?",
+        actions=error_buttons,
+        author="System",
+    ).send()
+
+
+# Dynamically register one callback per error type
+for _code, _label in ERROR_TYPES:
+    def _make_callback(error_code):
+        @cl.action_callback(f"error_{error_code}")
+        async def _error_callback(action: cl.Action):
+            stored = cl.user_session.get("last_result", {})
+            cl.user_session.set("pending_feedback", {
+                "error_type": error_code,
+                "raw_input":  stored.get("raw_input", ""),
+                "result":     stored.get("result"),
+            })
+            await cl.Message(
+                content=(
+                    f"📝 You selected: **{action.label}**\n\n"
+                    "Please type the correct value below (max 100 words) and hit Enter.\n"
+                    "Type `skip` to skip the correction and just log the error type."
+                ),
+                author="System",
+            ).send()
+    _make_callback(_code)

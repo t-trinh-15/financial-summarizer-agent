@@ -1,6 +1,6 @@
 {
   "summary": {
-    "run_timestamp": "2026-06-04T15:30:15.725398",
+    "run_timestamp": "2026-06-02T15:25:40.652380",
     "num_examples": 15,
     "avg_merchant_accuracy": 0.8,
     "avg_amount_accuracy": 1.0,
@@ -10,10 +10,10 @@
     "avg_schema_completeness": 1.0,
     "avg_explanation_quality_score": 0.84,
     "all_explanations_safe": true,
-    "avg_latency_seconds": 3.408,
-    "p50_latency_seconds": 3.0679,
-    "p95_latency_seconds": 3.7942,
-    "total_eval_latency_seconds": 51.12,
+    "avg_latency_seconds": 3.271,
+    "p50_latency_seconds": 3.1121,
+    "p95_latency_seconds": 3.9774,
+    "total_eval_latency_seconds": 49.063,
     "thresholds_passed": true,
     "threshold_failures": []
   },
@@ -29,13 +29,13 @@
       "schema_completeness": 1.0,
       "unsupported_explanation_safe": true,
       "explanation_quality_score": 1.0,
-      "latency_seconds": 3.0679,
+      "latency_seconds": 2.6862,
       "prediction": {
         "merchant": "Netflix",
         "total_amount": "14.99",
         "date": "06/01",
         "category": "purchase",
-        "plain_language_explanation": "Monthly subscription payment of $14.99 for Netflix Standard Plan streaming service.",
+        "plain_language_explanation": "Monthly subscription payment to Netflix for the Standard Plan streaming service.",
         "confidence": "high"
       },
       "expected": {
@@ -56,7 +56,7 @@
       "schema_completeness": 1.0,
       "unsupported_explanation_safe": true,
       "explanation_quality_score": 0.7,
-      "latency_seconds": 2.8107,
+      "latency_seconds": 3.9774,
       "prediction": {
         "merchant": "Starbucks",
         "total_amount": "13.75",
@@ -83,13 +83,13 @@
       "schema_completeness": 1.0,
       "unsupported_explanation_safe": true,
       "explanation_quality_score": 1.0,
-      "latency_seconds": 3.7942,
+      "latency_seconds": 5.8445,
       "prediction": {
         "merchant": "Eversource Energy",
         "total_amount": "77",
         "date": "06/03",
         "category": "purchase",
-        "plain_language_explanation": "Monthly electricity bill from Eversource Energy totaling $77.00, which includes a $72.40 electricity charge and a $4.60 service fee.",
+        "plain_language_explanation": "Monthly electricity bill from Eversource Energy, your utility provider. The total includes $72.40 for electricity usage and a $4.60 service fee.",
         "confidence": "high"
       },
       "expected": {
@@ -110,7 +110,7 @@
       "schema_completeness": 1.0,
       "unsupported_explanation_safe": true,
       "explanation_quality_score": 0.7,
-      "latency_seconds": 2.776,
+      "latency_seconds": 2.888,
       "prediction": {
         "merchant": "Shell Oil",
         "total_amount": "43.21",
@@ -137,13 +137,13 @@
       "schema_completeness": 1.0,
       "unsupported_explanation_safe": true,
       "explanation_quality_score": 0.7,
-      "latency_seconds": 3.1721,
+      "latency_seconds": 2.9038,
       "prediction": {
         "merchant": "Uber",
         "total_amount": "18.6",
         "date": "06/05",
         "category": "purchase",
-        "plain_language_explanation": "You took an Uber ride that cost $18.60. This is a payment for transportation services provided by Uber.",
+        "plain_language_explanation": "You paid $18.60 for a ride with Uber, a ride-sharing service that connects you with drivers for transportation.",
         "confidence": "high"
       },
       "expected": {
@@ -164,7 +164,7 @@
       "schema_completeness": 1.0,
       "unsupported_explanation_safe": true,
       "explanation_quality_score": 0.7,
-      "latency_seconds": 2.9679,
+      "latency_seconds": 2.5789,
       "prediction": {
         "merchant": "Amazon Marketplace",
         "total_amount": "26.45",
@@ -191,7 +191,7 @@
       "schema_completeness": 1.0,
       "unsupported_explanation_safe": true,
       "explanation_quality_score": 1.0,
-      "latency_seconds": 3.3816,
+      "latency_seconds": 2.6211,
       "prediction": {
         "merchant": "Verizon Wireless",
         "total_amount": "85",
@@ -218,13 +218,13 @@
       "schema_completeness": 1.0,
       "unsupported_explanation_safe": true,
       "explanation_quality_score": 1.0,
-      "latency_seconds": 2.8668,
+      "latency_seconds": 3.1695,
       "prediction": {
         "merchant": "Spotify USA",
         "total_amount": "10.99",
         "date": "06/08",
         "category": "purchase",
-        "plain_language_explanation": "Monthly subscription payment of $10.99 to Spotify for their Premium music streaming plan.",
+        "plain_language_explanation": "Monthly subscription payment of $10.99 for Spotify Premium, your music streaming service.",
         "confidence": "high"
       },
       "expected": {
@@ -245,13 +245,13 @@
       "schema_completeness": 1.0,
       "unsupported_explanation_safe": true,
       "explanation_quality_score": 0.7,
-      "latency_seconds": 3.0646,
+      "latency_seconds": 3.4767,
       "prediction": {
         "merchant": "CVS Pharmacy",
         "total_amount": "22.1",
         "date": "06/09",
         "category": "purchase",
-        "plain_language_explanation": "You purchased personal care items at CVS Pharmacy for $22.10.",
+        "plain_language_explanation": "Purchase of personal care items at CVS Pharmacy for $22.10.",
         "confidence": "high"
       },
       "expected": {
@@ -272,7 +272,7 @@
       "schema_completeness": 1.0,
       "unsupported_explanation_safe": true,
       "explanation_quality_score": 1.0,
-      "latency_seconds": 2.9822,
+      "latency_seconds": 3.2222,
       "prediction": {
         "merchant": "Bank",
         "total_amount": "12",
@@ -299,13 +299,13 @@
       "schema_completeness": 1.0,
       "unsupported_explanation_safe": true,
       "explanation_quality_score": 1.0,
-      "latency_seconds": 7.2246,
+      "latency_seconds": 3.2088,
       "prediction": {
         "merchant": "Amazon UK",
         "total_amount": "34.99",
         "date": "04/22",
         "category": "purchase",
-        "plain_language_explanation": "Purchase made on Amazon UK (their marketplace) on April 22nd for \u00a334.99. This is an online shopping transaction.",
+        "plain_language_explanation": "Purchase made on Amazon's UK marketplace on April 22nd for \u00a334.99. This was an online shopping transaction.",
         "confidence": "high"
       },
       "expected": {
@@ -326,7 +326,7 @@
       "schema_completeness": 1.0,
       "unsupported_explanation_safe": true,
       "explanation_quality_score": 0.7,
-      "latency_seconds": 2.5999,
+      "latency_seconds": 2.5809,
       "prediction": {
         "merchant": "Uber Eats",
         "total_amount": "22.5",
@@ -353,13 +353,13 @@
       "schema_completeness": 1.0,
       "unsupported_explanation_safe": true,
       "explanation_quality_score": 0.7,
-      "latency_seconds": 3.6897,
+      "latency_seconds": 3.1121,
       "prediction": {
         "merchant": "Shopee Singapore",
         "total_amount": "19.9",
         "date": "04/15",
         "category": "purchase",
-        "plain_language_explanation": "Purchase made on Shopee Singapore on April 15th for S$19.90. Shopee is an online shopping platform popular in Southeast Asia.",
+        "plain_language_explanation": "You made a purchase on Shopee Singapore, a popular online shopping platform, on April 15th for S$19.90.",
         "confidence": "high"
       },
       "expected": {
@@ -380,13 +380,13 @@
       "schema_completeness": 1.0,
       "unsupported_explanation_safe": true,
       "explanation_quality_score": 0.7,
-      "latency_seconds": 3.2702,
+      "latency_seconds": 3.0283,
       "prediction": {
         "merchant": "Tim Hortons",
         "total_amount": "6.75",
         "date": "05/02",
         "category": "purchase",
-        "plain_language_explanation": "You purchased food or drinks at Tim Hortons on May 2nd for CA$6.75.",
+        "plain_language_explanation": "Purchase at Tim Hortons coffee shop on May 2nd for CA$6.75. This was likely for coffee, breakfast, or a snack.",
         "confidence": "high"
       },
       "expected": {
@@ -407,13 +407,13 @@
       "schema_completeness": 1.0,
       "unsupported_explanation_safe": true,
       "explanation_quality_score": 1.0,
-      "latency_seconds": 3.4487,
+      "latency_seconds": 3.7631,
       "prediction": {
         "merchant": "Tokyo Metro",
         "total_amount": "320",
         "date": "05/20",
         "category": "purchase",
-        "plain_language_explanation": "Transit fare paid using an IC card (rechargeable transit card) on the Tokyo Metro subway system on May 20th.",
+        "plain_language_explanation": "Transit fare payment on Tokyo Metro subway system on May 20th using an IC card (rechargeable transit card). This covers a single journey or trip within the Tokyo subway network.",
         "confidence": "high"
       },
       "expected": {
