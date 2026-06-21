@@ -2,14 +2,16 @@
 ui/chainlit_app.py
 Personal Finance Expense Summarizer — Chainlit UI
 """
-
 import sys
 import os
 import re
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 
 import chainlit as cl
+from shared.storage import init_db, log_interaction, log_feedback, log_followup
 from agent.agent import translate
 from shared.feedback import save_feedback
 
@@ -75,25 +77,14 @@ MONTHS_PATTERN = (
     r"SEPTEMBER|OCTOBER|NOVEMBER|DECEMBER"
 )
 
-# Date patterns ordered from most specific to least specific.
-# Each tuple is (compiled_regex, format_string_or_None).
-# format_string uses {g1}, {g2}, {g3} for group references.
 DATE_PATTERNS = [
-    # YYYY-MM-DD  e.g. 2024-05-15
     (re.compile(r"\b(\d{4}-\d{2}-\d{2})\b"), None),
-    # YYYY/MM/DD  e.g. 2024/05/15
     (re.compile(r"\b(\d{4}/\d{2}/\d{2})\b"), None),
-    # YYYYMMDD    e.g. 20240515
     (re.compile(r"\b(20\d{2})(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])\b"), "{g1}-{g2}-{g3}"),
-    # DD-MMM-YYYY e.g. 15-MAY-2024 or 15 May 2024
     (re.compile(rf"\b(\d{{1,2}})[-\s]({MONTHS_PATTERN})[-\s](\d{{4}})\b", re.IGNORECASE), "{g1} {g2} {g3}"),
-    # MMM-DD-YYYY e.g. May-15-2024 or May 15 2024
     (re.compile(rf"\b({MONTHS_PATTERN})[-\s](\d{{1,2}})[-\s](\d{{4}})\b", re.IGNORECASE), "{g1} {g2} {g3}"),
-    # DDMMMYYYY   e.g. 15MAY2024
     (re.compile(rf"\b(\d{{1,2}})({MONTHS_PATTERN})(\d{{4}})\b", re.IGNORECASE), "{g1} {g2} {g3}"),
-    # MMMYYYY     e.g. MAY2024
     (re.compile(rf"\b({MONTHS_PATTERN})\s*(\d{{4}})\b", re.IGNORECASE), "{g1} {g2}"),
-    # MM/DD/YYYY or MM/DD  e.g. 05/15/2024 or 05/15
     (re.compile(r"\b(\d{1,2}/\d{1,2}(?:/\d{2,4})?)\b"), None),
 ]
 
@@ -123,6 +114,14 @@ ERROR_TYPES = [
     ("wrong_explanation", "Incorrect explanation"),
     ("everything_wrong",  "Everything wrong"),
     ("other",             "Other feedback"),
+]
+
+# Keywords that signal the user is asking a follow-up question
+# rather than submitting a new transaction
+FOLLOWUP_KEYWORDS = [
+    "category", "what is", "explain", "why", "how", "what does",
+    "what type", "tell me more", "what kind", "what was", "what does that mean",
+    "more detail", "clarify", "elaborate",
 ]
 
 
@@ -165,20 +164,12 @@ def get_category_icon(category) -> str:
 
 
 def extract_date_from_raw(raw_input: str, explanation: str) -> str:
-    """
-    Try raw input first, then fall back to the explanation.
-    Handles all common bank date formats:
-      YYYY-MM-DD, YYYY/MM/DD, YYYYMMDD,
-      DD-MMM-YYYY, MMM-DD-YYYY, DDMMMYYYY,
-      MMMYYYY, MM/DD/YYYY, MM/DD
-    """
     for text in [raw_input, explanation]:
         for pattern, fmt in DATE_PATTERNS:
             match = pattern.search(text)
             if match:
                 if fmt is None:
                     return match.group(1).title() if not match.group(1)[0].isdigit() else match.group(1)
-                # Fill in format template with matched groups
                 result = fmt
                 for i, g in enumerate(match.groups(), 1):
                     result = result.replace(f"{{g{i}}}", str(g).title() if g and not g[0].isdigit() else str(g))
@@ -248,8 +239,13 @@ async def call_ocr_service(file_path: str) -> str:
 
 @cl.on_chat_start
 async def on_chat_start():
+    # ── CHANGE 1: Initialise SQLite tables on startup ──
+    init_db()
+
     cl.user_session.set("transaction_history", [])
     cl.user_session.set("pending_feedback", None)
+    cl.user_session.set("last_result", None)       # stores last agent result for follow-ups
+    cl.user_session.set("interaction_id", None)    # stores last SQLite row ID for feedback
 
     # 1. Title
     await cl.Message(
@@ -417,6 +413,30 @@ async def main(message: cl.Message):
     if not user_text:
         return
 
+    # ── CHANGE 2: Follow-up detection ──
+    # If the user asks a clarifying question right after an agent response,
+    # answer from the cached result instead of re-running the agent.
+    # This also logs the follow-up for the Clarification Rate KPI.
+    last_result = cl.user_session.get("last_result")
+    is_followup = (
+        last_result is not None
+        and any(kw in user_text.lower() for kw in FOLLOWUP_KEYWORDS)
+    )
+
+    if is_followup:
+        log_followup(cl.context.session.id, user_text)
+        stored_result = last_result["result"]
+        await cl.Message(
+            content=(
+                f"Here's what I found for that transaction:\n\n"
+                f"**Category:** {clean_enum(stored_result.transaction_type)}\n"
+                f"**Confidence:** {get_confidence_icon(stored_result.confidence)} "
+                f"{clean_enum(stored_result.confidence)}\n\n"
+                f"{stored_result.plain_english_explanation}"
+            )
+        ).send()
+        return
+
     if not looks_like_financial_input(user_text):
         await cl.Message(
             content=(
@@ -448,6 +468,12 @@ async def _process_transaction(raw_input: str, source: str):
 
     save_transaction_to_session(result, raw_input)
 
+    # ── CHANGE 3: Log interaction to SQLite and cache for follow-ups ──
+    session_id = cl.context.session.id
+    interaction_id = log_interaction(session_id, raw_input, result)
+    cl.user_session.set("interaction_id", interaction_id)
+    cl.user_session.set("last_result", {"result": result, "raw_input": raw_input})
+
     response_text = format_agent_response(result, raw_input)
 
     actions = [
@@ -457,8 +483,6 @@ async def _process_transaction(raw_input: str, source: str):
 
     await cl.Message(content=response_text, actions=actions).send()
 
-    cl.user_session.set("last_result", {"result": result, "raw_input": raw_input})
-
 
 # ============================================================
 # FEEDBACK CALLBACKS
@@ -467,6 +491,12 @@ async def _process_transaction(raw_input: str, source: str):
 @cl.action_callback("accept")
 async def on_accept(action: cl.Action):
     stored = cl.user_session.get("last_result", {})
+
+    # ── CHANGE 4: Log acceptance to SQLite for Acceptance Rate KPI ──
+    interaction_id = cl.user_session.get("interaction_id")
+    if interaction_id:
+        log_feedback(cl.context.session.id, interaction_id, accepted=True)
+
     save_feedback(
         verdict="accepted",
         error_type=None,
@@ -482,6 +512,11 @@ async def on_accept(action: cl.Action):
 
 @cl.action_callback("reject")
 async def on_reject(action: cl.Action):
+    # ── CHANGE 5: Log rejection to SQLite for Acceptance Rate KPI ──
+    interaction_id = cl.user_session.get("interaction_id")
+    if interaction_id:
+        log_feedback(cl.context.session.id, interaction_id, accepted=False)
+
     error_buttons = [
         cl.Action(
             name=f"error_{code}",
