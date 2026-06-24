@@ -1,0 +1,395 @@
+{
+  "summary": {
+    "run_timestamp": "2026-06-21T19:56:32.867962",
+    "num_examples": 15,
+    "avg_merchant_accuracy": 0.2,
+    "avg_amount_accuracy": 0.2,
+    "avg_date_accuracy": 0.2,
+    "avg_category_accuracy": 0.2,
+    "avg_classifier_category_accuracy": 0.667,
+    "avg_field_match_score": 0.2,
+    "avg_schema_completeness": 0.2,
+    "avg_explanation_quality_score": 0.18,
+    "all_explanations_safe": true,
+    "avg_latency_seconds": 3.011,
+    "p50_latency_seconds": 2.6181,
+    "p95_latency_seconds": 3.6961,
+    "total_eval_latency_seconds": 45.184,
+    "thresholds_passed": false,
+    "threshold_failures": [
+      {
+        "metric": "avg_merchant_accuracy",
+        "score": 0.2,
+        "threshold": 0.8
+      },
+      {
+        "metric": "avg_amount_accuracy",
+        "score": 0.2,
+        "threshold": 0.9
+      },
+      {
+        "metric": "avg_date_accuracy",
+        "score": 0.2,
+        "threshold": 0.75
+      },
+      {
+        "metric": "avg_category_accuracy",
+        "score": 0.2,
+        "threshold": 0.8
+      },
+      {
+        "metric": "avg_field_match_score",
+        "score": 0.2,
+        "threshold": 0.85
+      },
+      {
+        "metric": "avg_explanation_quality_score",
+        "score": 0.18,
+        "threshold": 0.7
+      },
+      {
+        "metric": "avg_classifier_category_accuracy",
+        "score": 0.667,
+        "threshold": 0.8
+      }
+    ]
+  },
+  "results": [
+    {
+      "id": "demo_001",
+      "status": "error: 'str' object has no attribute 'value'",
+      "merchant_accuracy": 0.0,
+      "amount_accuracy": 0.0,
+      "date_accuracy": 0.0,
+      "category_accuracy": 0.0,
+      "classifier_category_accuracy": 1.0,
+      "field_match_score": 0.0,
+      "schema_completeness": 0.0,
+      "unsupported_explanation_safe": true,
+      "explanation_quality_score": 0.0,
+      "latency_seconds": 6.3708,
+      "prediction": {},
+      "expected": {
+        "merchant": "Netflix",
+        "total_amount": "14.99",
+        "date": "06/01",
+        "category": "purchase"
+      }
+    },
+    {
+      "id": "demo_002",
+      "status": "error: 'str' object has no attribute 'value'",
+      "merchant_accuracy": 0.0,
+      "amount_accuracy": 0.0,
+      "date_accuracy": 0.0,
+      "category_accuracy": 0.0,
+      "classifier_category_accuracy": 1.0,
+      "field_match_score": 0.0,
+      "schema_completeness": 0.0,
+      "unsupported_explanation_safe": true,
+      "explanation_quality_score": 0.0,
+      "latency_seconds": 2.3602,
+      "prediction": {},
+      "expected": {
+        "merchant": "Starbucks",
+        "total_amount": "13.75",
+        "date": "06/02",
+        "category": "purchase"
+      }
+    },
+    {
+      "id": "demo_003",
+      "status": "error: 'str' object has no attribute 'value'",
+      "merchant_accuracy": 0.0,
+      "amount_accuracy": 0.0,
+      "date_accuracy": 0.0,
+      "category_accuracy": 0.0,
+      "classifier_category_accuracy": 0.0,
+      "field_match_score": 0.0,
+      "schema_completeness": 0.0,
+      "unsupported_explanation_safe": true,
+      "explanation_quality_score": 0.0,
+      "latency_seconds": 3.0161,
+      "prediction": {},
+      "expected": {
+        "merchant": "Eversource",
+        "total_amount": "77",
+        "date": "06/03",
+        "category": "purchase"
+      }
+    },
+    {
+      "id": "demo_004",
+      "status": "error: 'str' object has no attribute 'value'",
+      "merchant_accuracy": 0.0,
+      "amount_accuracy": 0.0,
+      "date_accuracy": 0.0,
+      "category_accuracy": 0.0,
+      "classifier_category_accuracy": 1.0,
+      "field_match_score": 0.0,
+      "schema_completeness": 0.0,
+      "unsupported_explanation_safe": true,
+      "explanation_quality_score": 0.0,
+      "latency_seconds": 2.2809,
+      "prediction": {},
+      "expected": {
+        "merchant": "Shell Oil",
+        "total_amount": "43.21",
+        "date": "06/04",
+        "category": "purchase"
+      }
+    },
+    {
+      "id": "demo_005",
+      "status": "ok",
+      "merchant_accuracy": 1.0,
+      "amount_accuracy": 1.0,
+      "date_accuracy": 1.0,
+      "category_accuracy": 1.0,
+      "classifier_category_accuracy": 0.0,
+      "field_match_score": 1.0,
+      "schema_completeness": 1.0,
+      "unsupported_explanation_safe": true,
+      "explanation_quality_score": 0.7,
+      "latency_seconds": 3.0895,
+      "prediction": {
+        "merchant": "Uber",
+        "total_amount": "18.6",
+        "date": "06/05",
+        "category": "purchase",
+        "plain_language_explanation": "Ride-sharing trip with Uber. This is the fare for transportation from one location to another.",
+        "confidence": "high"
+      },
+      "expected": {
+        "merchant": "Uber",
+        "total_amount": "18.6",
+        "date": "06/05",
+        "category": "purchase"
+      }
+    },
+    {
+      "id": "demo_006",
+      "status": "error: 'str' object has no attribute 'value'",
+      "merchant_accuracy": 0.0,
+      "amount_accuracy": 0.0,
+      "date_accuracy": 0.0,
+      "category_accuracy": 0.0,
+      "classifier_category_accuracy": 1.0,
+      "field_match_score": 0.0,
+      "schema_completeness": 0.0,
+      "unsupported_explanation_safe": true,
+      "explanation_quality_score": 0.0,
+      "latency_seconds": 2.2633,
+      "prediction": {},
+      "expected": {
+        "merchant": "Amazon Marketplace",
+        "total_amount": "26.45",
+        "date": "06/06",
+        "category": "purchase"
+      }
+    },
+    {
+      "id": "demo_007",
+      "status": "error: 'str' object has no attribute 'value'",
+      "merchant_accuracy": 0.0,
+      "amount_accuracy": 0.0,
+      "date_accuracy": 0.0,
+      "category_accuracy": 0.0,
+      "classifier_category_accuracy": 0.0,
+      "field_match_score": 0.0,
+      "schema_completeness": 0.0,
+      "unsupported_explanation_safe": true,
+      "explanation_quality_score": 0.0,
+      "latency_seconds": 2.399,
+      "prediction": {},
+      "expected": {
+        "merchant": "Verizon Wireless",
+        "total_amount": "85",
+        "date": "06/07",
+        "category": "purchase"
+      }
+    },
+    {
+      "id": "demo_008",
+      "status": "ok",
+      "merchant_accuracy": 1.0,
+      "amount_accuracy": 1.0,
+      "date_accuracy": 1.0,
+      "category_accuracy": 1.0,
+      "classifier_category_accuracy": 0.0,
+      "field_match_score": 1.0,
+      "schema_completeness": 1.0,
+      "unsupported_explanation_safe": true,
+      "explanation_quality_score": 1.0,
+      "latency_seconds": 2.4378,
+      "prediction": {
+        "merchant": "Spotify USA",
+        "total_amount": "10.99",
+        "date": "06/08",
+        "category": "purchase",
+        "plain_language_explanation": "Monthly subscription payment for Spotify Premium music streaming service.",
+        "confidence": "high"
+      },
+      "expected": {
+        "merchant": "Spotify USA",
+        "total_amount": "10.99",
+        "date": "06/08",
+        "category": "purchase"
+      }
+    },
+    {
+      "id": "demo_009",
+      "status": "error: 'str' object has no attribute 'value'",
+      "merchant_accuracy": 0.0,
+      "amount_accuracy": 0.0,
+      "date_accuracy": 0.0,
+      "category_accuracy": 0.0,
+      "classifier_category_accuracy": 1.0,
+      "field_match_score": 0.0,
+      "schema_completeness": 0.0,
+      "unsupported_explanation_safe": true,
+      "explanation_quality_score": 0.0,
+      "latency_seconds": 2.5071,
+      "prediction": {},
+      "expected": {
+        "merchant": "CVS PHARMACY",
+        "total_amount": "22.1",
+        "date": "06/09",
+        "category": "purchase"
+      }
+    },
+    {
+      "id": "demo_010",
+      "status": "ok",
+      "merchant_accuracy": 1.0,
+      "amount_accuracy": 1.0,
+      "date_accuracy": 1.0,
+      "category_accuracy": 1.0,
+      "classifier_category_accuracy": 0.0,
+      "field_match_score": 1.0,
+      "schema_completeness": 1.0,
+      "unsupported_explanation_safe": true,
+      "explanation_quality_score": 1.0,
+      "latency_seconds": 2.8838,
+      "prediction": {
+        "merchant": "Bank",
+        "total_amount": "12",
+        "date": "06/10",
+        "category": "fee",
+        "plain_language_explanation": "Monthly maintenance fee charged by your bank for account services. This is a recurring fee for keeping your account open.",
+        "confidence": "high"
+      },
+      "expected": {
+        "merchant": "Bank",
+        "total_amount": "12",
+        "date": "06/10",
+        "category": "fee"
+      }
+    },
+    {
+      "id": "demo_011",
+      "status": "error: 'str' object has no attribute 'value'",
+      "merchant_accuracy": 0.0,
+      "amount_accuracy": 0.0,
+      "date_accuracy": 0.0,
+      "category_accuracy": 0.0,
+      "classifier_category_accuracy": 1.0,
+      "field_match_score": 0.0,
+      "schema_completeness": 0.0,
+      "unsupported_explanation_safe": true,
+      "explanation_quality_score": 0.0,
+      "latency_seconds": 3.0978,
+      "prediction": {},
+      "expected": {
+        "merchant": "Amazon",
+        "total_amount": "34.99",
+        "date": "04/22",
+        "category": "purchase"
+      }
+    },
+    {
+      "id": "demo_012",
+      "status": "error: 'str' object has no attribute 'value'",
+      "merchant_accuracy": 0.0,
+      "amount_accuracy": 0.0,
+      "date_accuracy": 0.0,
+      "category_accuracy": 0.0,
+      "classifier_category_accuracy": 1.0,
+      "field_match_score": 0.0,
+      "schema_completeness": 0.0,
+      "unsupported_explanation_safe": true,
+      "explanation_quality_score": 0.0,
+      "latency_seconds": 2.466,
+      "prediction": {},
+      "expected": {
+        "merchant": "Uber Eats",
+        "total_amount": "22.5",
+        "date": "05/08",
+        "category": "purchase"
+      }
+    },
+    {
+      "id": "demo_013",
+      "status": "error: 'str' object has no attribute 'value'",
+      "merchant_accuracy": 0.0,
+      "amount_accuracy": 0.0,
+      "date_accuracy": 0.0,
+      "category_accuracy": 0.0,
+      "classifier_category_accuracy": 1.0,
+      "field_match_score": 0.0,
+      "schema_completeness": 0.0,
+      "unsupported_explanation_safe": true,
+      "explanation_quality_score": 0.0,
+      "latency_seconds": 2.6181,
+      "prediction": {},
+      "expected": {
+        "merchant": "Shopee SG",
+        "total_amount": "19.9",
+        "date": "04/15",
+        "category": "purchase"
+      }
+    },
+    {
+      "id": "demo_014",
+      "status": "error: 'str' object has no attribute 'value'",
+      "merchant_accuracy": 0.0,
+      "amount_accuracy": 0.0,
+      "date_accuracy": 0.0,
+      "category_accuracy": 0.0,
+      "classifier_category_accuracy": 1.0,
+      "field_match_score": 0.0,
+      "schema_completeness": 0.0,
+      "unsupported_explanation_safe": true,
+      "explanation_quality_score": 0.0,
+      "latency_seconds": 3.6961,
+      "prediction": {},
+      "expected": {
+        "merchant": "Tim Hortons",
+        "total_amount": "6.75",
+        "date": "05/02",
+        "category": "purchase"
+      }
+    },
+    {
+      "id": "demo_015",
+      "status": "error: 'str' object has no attribute 'value'",
+      "merchant_accuracy": 0.0,
+      "amount_accuracy": 0.0,
+      "date_accuracy": 0.0,
+      "category_accuracy": 0.0,
+      "classifier_category_accuracy": 1.0,
+      "field_match_score": 0.0,
+      "schema_completeness": 0.0,
+      "unsupported_explanation_safe": true,
+      "explanation_quality_score": 0.0,
+      "latency_seconds": 3.6795,
+      "prediction": {},
+      "expected": {
+        "merchant": "Tokyo Metro",
+        "total_amount": "320",
+        "date": "05/20",
+        "category": "purchase"
+      }
+    }
+  ]
+}

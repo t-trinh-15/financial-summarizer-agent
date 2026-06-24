@@ -220,3 +220,6 @@ key.json
 .DS_Store
 data/feedback_log.json
 data/interactions.db
+shared/category_classifier.pkl
+data/sample_receipts/
+.files/

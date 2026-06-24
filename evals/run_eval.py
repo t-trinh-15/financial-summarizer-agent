@@ -7,6 +7,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from agent.agent import translate
+from agent.classifier import predict_category
 from evals.scorer import (
     field_match_score,
     schema_completeness,
@@ -16,15 +17,17 @@ from evals.scorer import (
     date_accuracy,
     category_accuracy,
     explanation_quality_score,
+    score_classifier_accuracy,
 )
 
 THRESHOLDS = {
-    "avg_merchant_accuracy":         0.80,
-    "avg_amount_accuracy":           0.90,
-    "avg_date_accuracy":             0.75,
-    "avg_category_accuracy":         0.80,
-    "avg_field_match_score":         0.85,
-    "avg_explanation_quality_score": 0.70,
+    "avg_merchant_accuracy":              0.80,
+    "avg_amount_accuracy":               0.90,
+    "avg_date_accuracy":                 0.75,
+    "avg_category_accuracy":             0.80,
+    "avg_field_match_score":             0.85,
+    "avg_explanation_quality_score":     0.70,
+    "avg_classifier_category_accuracy":  0.80,
 }
 
 def average(values):
@@ -62,9 +65,9 @@ def agent_to_eval_format(input_text):
         "merchant":                   result.merchant or "",
         "total_amount":               amount_str,
         "date":                       date_str,
-        "category":                   result.transaction_type.value if result.transaction_type else "",
+        "category":                   result.transaction_type.value if hasattr(result.transaction_type, "value") else str(result.transaction_type or ""),
         "plain_language_explanation": result.plain_english_explanation or "",
-        "confidence":                 result.confidence.value if hasattr(result.confidence, "value") else "",
+        "confidence":                 result.confidence.value if hasattr(result.confidence, "value") else str(result.confidence or ""),
     }
 
 def check_thresholds(summary):
@@ -99,13 +102,21 @@ def main():
             status = f"error: {e}"
         latency = round(time.time() - start, 4)
 
+        # Classifier accuracy — runs independently of the LLM
+        classifier_pred = predict_category(example["input_text"]) or ""
+        classifier_acc = score_classifier_accuracy(
+            classifier_pred,
+            example["expected"].get("category", "")
+        )
+
         result = {
             "id":                           example["id"],
             "status":                       status,
             "merchant_accuracy":            merchant_accuracy(prediction, example["expected"]),
             "amount_accuracy":              amount_accuracy(prediction, example["expected"]),
-            "date_accuracy":                date_accuracy(prediction, example["expected"]),
+            "date_accuracy":               date_accuracy(prediction, example["expected"]),
             "category_accuracy":            category_accuracy(prediction, example["expected"]),
+            "classifier_category_accuracy": classifier_acc,
             "field_match_score":            field_match_score(prediction, example["expected"]),
             "schema_completeness":          schema_completeness(prediction),
             "unsupported_explanation_safe": unsupported_explanation_check(prediction),
@@ -115,25 +126,26 @@ def main():
             "expected":                     example["expected"],
         }
         results.append(result)
-        print(f"field_match={result['field_match_score']:.2f}  latency={latency}s")
+        print(f"field_match={result['field_match_score']:.2f}  classifier={classifier_acc:.2f}  latency={latency}s")
 
     latencies = [r["latency_seconds"] for r in results]
 
     summary = {
-        "run_timestamp":                 datetime.now().isoformat(),
-        "num_examples":                  len(results),
-        "avg_merchant_accuracy":         average([r["merchant_accuracy"] for r in results]),
-        "avg_amount_accuracy":           average([r["amount_accuracy"] for r in results]),
-        "avg_date_accuracy":             average([r["date_accuracy"] for r in results]),
-        "avg_category_accuracy":         average([r["category_accuracy"] for r in results]),
-        "avg_field_match_score":         average([r["field_match_score"] for r in results]),
-        "avg_schema_completeness":       average([r["schema_completeness"] for r in results]),
-        "avg_explanation_quality_score": average([r["explanation_quality_score"] for r in results]),
-        "all_explanations_safe":         all(r["unsupported_explanation_safe"] for r in results),
-        "avg_latency_seconds":           average(latencies),
-        "p50_latency_seconds":           percentile(latencies, 0.50),
-        "p95_latency_seconds":           percentile(latencies, 0.95),
-        "total_eval_latency_seconds":    round(time.time() - start_all, 3),
+        "run_timestamp":                      datetime.now().isoformat(),
+        "num_examples":                       len(results),
+        "avg_merchant_accuracy":              average([r["merchant_accuracy"] for r in results]),
+        "avg_amount_accuracy":               average([r["amount_accuracy"] for r in results]),
+        "avg_date_accuracy":                 average([r["date_accuracy"] for r in results]),
+        "avg_category_accuracy":             average([r["category_accuracy"] for r in results]),
+        "avg_classifier_category_accuracy":  average([r["classifier_category_accuracy"] for r in results]),
+        "avg_field_match_score":             average([r["field_match_score"] for r in results]),
+        "avg_schema_completeness":           average([r["schema_completeness"] for r in results]),
+        "avg_explanation_quality_score":     average([r["explanation_quality_score"] for r in results]),
+        "all_explanations_safe":             all(r["unsupported_explanation_safe"] for r in results),
+        "avg_latency_seconds":               average(latencies),
+        "p50_latency_seconds":              percentile(latencies, 0.50),
+        "p95_latency_seconds":              percentile(latencies, 0.95),
+        "total_eval_latency_seconds":        round(time.time() - start_all, 3),
     }
 
     failures = check_thresholds(summary)
@@ -143,17 +155,18 @@ def main():
     print("\n" + "=" * 55)
     print("  EVAL SUMMARY")
     print("=" * 55)
-    print(f"  Examples run:        {summary['num_examples']}")
-    print(f"  Merchant accuracy:   {summary['avg_merchant_accuracy']}")
-    print(f"  Amount accuracy:     {summary['avg_amount_accuracy']}")
-    print(f"  Date accuracy:       {summary['avg_date_accuracy']}")
-    print(f"  Category accuracy:   {summary['avg_category_accuracy']}")
-    print(f"  Field match score:   {summary['avg_field_match_score']}")
-    print(f"  Schema completeness: {summary['avg_schema_completeness']}")
-    print(f"  Explanation quality: {summary['avg_explanation_quality_score']}")
-    print(f"  All explanations safe: {summary['all_explanations_safe']}")
-    print(f"  Avg latency:         {summary['avg_latency_seconds']}s")
-    print(f"  P95 latency:         {summary['p95_latency_seconds']}s")
+    print(f"  Examples run:              {summary['num_examples']}")
+    print(f"  Merchant accuracy:         {summary['avg_merchant_accuracy']}")
+    print(f"  Amount accuracy:           {summary['avg_amount_accuracy']}")
+    print(f"  Date accuracy:             {summary['avg_date_accuracy']}")
+    print(f"  Category accuracy (LLM):   {summary['avg_category_accuracy']}")
+    print(f"  Category accuracy (clf):   {summary['avg_classifier_category_accuracy']}")
+    print(f"  Field match score:         {summary['avg_field_match_score']}")
+    print(f"  Schema completeness:       {summary['avg_schema_completeness']}")
+    print(f"  Explanation quality:       {summary['avg_explanation_quality_score']}")
+    print(f"  All explanations safe:     {summary['all_explanations_safe']}")
+    print(f"  Avg latency:               {summary['avg_latency_seconds']}s")
+    print(f"  P95 latency:               {summary['p95_latency_seconds']}s")
     print("=" * 55)
 
     if failures:

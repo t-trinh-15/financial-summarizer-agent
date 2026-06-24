@@ -59,3 +59,7 @@ def explanation_quality_score(predicted: Dict[str, Any]) -> float:
     if not any(word in explanation.lower() for word in ["definitely", "guaranteed", "certainly"]):
         score += 0.3
     return round(min(score, 1.0), 3)
+
+def score_classifier_accuracy(predicted_category: str, expected_category: str) -> float:
+    """Exact match between classifier prediction and golden set label."""
+    return 1.0 if predicted_category == expected_category else 0.0

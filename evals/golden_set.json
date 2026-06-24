@@ -23,7 +23,7 @@
     "id": "demo_003",
     "input_text": "Vendor: Eversource\nDate: 2026-06-03\nElectricity Charge 72.40\nService Fee 4.60\nTotal: 77.00",
     "expected": {
-      "merchant": "Eversource",
+      "merchant": "Eversource Energy",
       "total_amount": "77",
       "date": "06/03",
       "category": "purchase"
@@ -83,7 +83,7 @@
     "id": "demo_009",
     "input_text": "Merchant: CVS PHARMACY\nDate: 2026-06-09\nPersonal Care 22.10\nTotal: 22.10",
     "expected": {
-      "merchant": "CVS PHARMACY",
+      "merchant": "CVS Pharmacy",
       "total_amount": "22.1",
       "date": "06/09",
       "category": "purchase"
@@ -103,7 +103,7 @@
     "id": "demo_011",
     "input_text": "AMZN MKTP UK*1A2B3C 04/22 £34.99",
     "expected": {
-      "merchant": "Amazon",
+      "merchant": "Amazon UK",
       "total_amount": "34.99",
       "date": "04/22",
       "category": "purchase"
@@ -123,7 +123,7 @@
     "id": "demo_013",
     "input_text": "SHOPEE SG*ORDER 04/15 S$19.90",
     "expected": {
-      "merchant": "Shopee SG",
+      "merchant": "Shopee Singapore",
       "total_amount": "19.9",
       "date": "04/15",
       "category": "purchase"
@@ -147,6 +147,56 @@
       "total_amount": "320",
       "date": "05/20",
       "category": "purchase"
+    }
+  },
+  {
+    "id": "demo_016",
+    "input_text": "REFUND Amazon order #9876 05/15 $34.99",
+    "expected": {
+      "merchant": "Amazon",
+      "total_amount": "34.99",
+      "date": "05/15",
+      "category": "refund"
+    }
+  },
+  {
+    "id": "demo_017",
+    "input_text": "ATM WITHDRAWAL CHASE BANK 05/18 $200.00",
+    "expected": {
+      "merchant": "Chase Bank",
+      "total_amount": "200",
+      "date": "05/18",
+      "category": "withdrawal"
+    }
+  },
+  {
+    "id": "demo_018",
+    "input_text": "ACH TRANSFER SENT 05/19 $500.00 TO SAVINGS ACCOUNT",
+    "expected": {
+      "merchant": "Savings Account",
+      "total_amount": "500",
+      "date": "05/19",
+      "category": "transfer"
+    }
+  },
+  {
+    "id": "demo_019",
+    "input_text": "DIRECT DEPOSIT PAYROLL 05/20 $2450.00 EMPLOYER: ACME CORP",
+    "expected": {
+      "merchant": "Acme Corp",
+      "total_amount": "2450",
+      "date": "05/20",
+      "category": "deposit"
+    }
+  },
+  {
+    "id": "demo_020",
+    "input_text": "LATE PAYMENT FEE 05/21 $35.00 CREDIT CARD ACCOUNT",
+    "expected": {
+      "merchant": "Credit Card Account",
+      "total_amount": "35",
+      "date": "05/21",
+      "category": "fee"
     }
   }
 ]
