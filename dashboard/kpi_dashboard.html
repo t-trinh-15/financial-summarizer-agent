@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>KPI Dashboard — Personal Finance Expense Summarizer</title>
+  <title>Live Agent Health Monitor — Personal Finance Expense Summarizer</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -27,6 +27,9 @@
       --amber-text:   #854F0B;
       --radius-md:    8px;
       --radius-lg:    12px;
+      --kpi-green:    #4CAF50;
+      --kpi-yellow:   #D4A017;
+      --kpi-teal:     #5BA4A4;
     }
 
     @media (prefers-color-scheme: dark) {
@@ -56,12 +59,8 @@
       padding: 2rem 1rem;
     }
 
-    .container {
-      max-width: 820px;
-      margin: 0 auto;
-    }
+    .container { max-width: 820px; margin: 0 auto; }
 
-    /* ── Header ── */
     .header {
       display: flex;
       align-items: flex-start;
@@ -72,6 +71,7 @@
     }
     .header-title { font-size: 22px; font-weight: 500; color: var(--text); }
     .header-sub   { font-size: 13px; color: var(--text-3); margin-top: 3px; }
+    .header-desc  { font-size: 13px; color: var(--text-2); margin-top: 10px; max-width: 540px; line-height: 1.6; }
 
     .refresh-btn {
       display: flex;
@@ -90,7 +90,6 @@
     .refresh-btn:hover { background: var(--surface-2); }
     .refresh-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
-    /* ── Section label ── */
     .section-label {
       font-size: 11px;
       letter-spacing: 0.06em;
@@ -99,17 +98,13 @@
       margin-bottom: 10px;
     }
 
-    /* ── KPI cards ── */
     .kpi-grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 12px;
       margin-bottom: 2rem;
     }
-
-    @media (max-width: 540px) {
-      .kpi-grid { grid-template-columns: 1fr; }
-    }
+    @media (max-width: 540px) { .kpi-grid { grid-template-columns: 1fr; } }
 
     .kpi-card {
       background: var(--surface-2);
@@ -117,7 +112,7 @@
       padding: 1rem 1.25rem;
     }
     .kpi-card-label  { font-size: 12px; color: var(--text-2); margin-bottom: 6px; }
-    .kpi-card-value  { font-size: 30px; font-weight: 500; color: var(--text); line-height: 1; margin-bottom: 4px; }
+    .kpi-card-value  { font-size: 30px; font-weight: 500; line-height: 1; margin-bottom: 4px; }
     .kpi-card-target { font-size: 12px; color: var(--text-3); margin-bottom: 8px; }
     .badge {
       display: inline-block;
@@ -126,12 +121,11 @@
       padding: 3px 9px;
       border-radius: 999px;
     }
-    .badge-pass   { background: var(--green-bg);  color: var(--green-text); }
-    .badge-fail   { background: var(--red-bg);    color: var(--red-text);   }
-    .badge-warn   { background: var(--amber-bg);  color: var(--amber-text); }
-    .badge-neutral{ background: var(--surface);   color: var(--text-3); border: 0.5px solid var(--border); }
+    .badge-pass    { background: var(--green-bg);  color: var(--green-text); }
+    .badge-fail    { background: var(--red-bg);    color: var(--red-text);   }
+    .badge-warn    { background: var(--amber-bg);  color: var(--amber-text); }
+    .badge-neutral { background: var(--surface);   color: var(--text-3); border: 0.5px solid var(--border); }
 
-    /* ── Meta row ── */
     .meta-row {
       display: flex;
       gap: 2rem;
@@ -141,7 +135,6 @@
     .meta-item { font-size: 13px; color: var(--text-2); }
     .meta-item span { font-weight: 500; color: var(--text); }
 
-    /* ── Section card ── */
     .section-card {
       background: var(--surface);
       border: 0.5px solid var(--border);
@@ -156,7 +149,6 @@
       margin-bottom: 1rem;
     }
 
-    /* ── Progress bars ── */
     .bar-row {
       display: flex;
       align-items: center;
@@ -164,12 +156,11 @@
       margin-bottom: 12px;
     }
     .bar-row:last-child { margin-bottom: 0; }
-    .bar-label  { font-size: 13px; color: var(--text-2); width: 140px; flex-shrink: 0; }
-    .bar-track  { flex: 1; background: var(--surface-2); border-radius: 4px; height: 8px; overflow: hidden; }
-    .bar-fill   { height: 100%; border-radius: 4px; transition: width 0.4s ease; }
-    .bar-val    { font-size: 13px; font-weight: 500; color: var(--text); width: 48px; text-align: right; flex-shrink: 0; }
+    .bar-label { font-size: 13px; color: var(--text-2); width: 140px; flex-shrink: 0; }
+    .bar-track { flex: 1; background: var(--surface-2); border-radius: 4px; height: 8px; overflow: hidden; }
+    .bar-fill  { height: 100%; border-radius: 4px; transition: width 0.4s ease; }
+    .bar-val   { font-size: 13px; font-weight: 500; color: var(--text); width: 48px; text-align: right; flex-shrink: 0; }
 
-    /* ── History table ── */
     .table-wrap { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; }
     th {
@@ -191,7 +182,6 @@
     td:first-child { color: var(--text); }
     tr:last-child td { border-bottom: none; }
 
-    /* ── Status indicator ── */
     .dot {
       display: inline-block;
       width: 8px; height: 8px;
@@ -199,10 +189,9 @@
       margin-right: 5px;
       flex-shrink: 0;
     }
-    .dot-green  { background: var(--green); }
-    .dot-red    { background: var(--red); }
+    .dot-green { background: var(--green); }
+    .dot-red   { background: var(--red); }
 
-    /* ── Error / loading states ── */
     .state-box {
       text-align: center;
       padding: 2rem;
@@ -219,7 +208,6 @@
       color: var(--text-2);
     }
 
-    /* ── Footer ── */
     .footer {
       font-size: 12px;
       color: var(--text-3);
@@ -228,7 +216,6 @@
     }
     .footer code { font-size: 11px; }
 
-    /* ── Auto-refresh toggle ── */
     .auto-row {
       display: flex;
       align-items: center;
@@ -237,11 +224,7 @@
       color: var(--text-2);
       margin-bottom: 2rem;
     }
-    .toggle {
-      position: relative;
-      width: 32px; height: 18px;
-      flex-shrink: 0;
-    }
+    .toggle { position: relative; width: 32px; height: 18px; flex-shrink: 0; }
     .toggle input { opacity: 0; width: 0; height: 0; }
     .slider {
       position: absolute; inset: 0;
@@ -269,8 +252,9 @@
   <!-- Header -->
   <div class="header">
     <div>
-      <div class="header-title">KPI dashboard</div>
-      <div class="header-sub">Personal Finance Expense Summarizer — internal team view</div>
+      <div class="header-title">Live Agent Health Monitor</div>
+      <div class="header-sub">Personal Finance Expense Summarizer · ALY 8060 · Group 1</div>
+      <div class="header-desc">We built this to monitor whether the agent is actually working for users. Not just in testing, but in every real interaction. Three metrics update live so we catch problems before they affect the next user.</div>
     </div>
     <button class="refresh-btn" onclick="loadKPIs()">
       <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.36-3.36L23 10M1 14l5.13 4.36A9 9 0 0020.49 15"/></svg>
@@ -293,19 +277,19 @@
   <div class="kpi-grid">
     <div class="kpi-card">
       <div class="kpi-card-label">Acceptance rate</div>
-      <div class="kpi-card-value" id="acc-val">—</div>
+      <div class="kpi-card-value" id="acc-val" style="color: var(--kpi-green);">—</div>
       <div class="kpi-card-target">Target: ≥ 85%</div>
       <span class="badge badge-neutral" id="acc-badge">Loading</span>
     </div>
     <div class="kpi-card">
       <div class="kpi-card-label">Clarification rate</div>
-      <div class="kpi-card-value" id="cla-val">—</div>
+      <div class="kpi-card-value" id="cla-val" style="color: var(--kpi-yellow);">—</div>
       <div class="kpi-card-target">Target: ≤ 20%</div>
       <span class="badge badge-neutral" id="cla-badge">Loading</span>
     </div>
     <div class="kpi-card">
       <div class="kpi-card-label">Coverage rate</div>
-      <div class="kpi-card-value" id="cov-val">—</div>
+      <div class="kpi-card-value" id="cov-val" style="color: var(--kpi-teal);">—</div>
       <div class="kpi-card-target">Target: ≥ 80%</div>
       <span class="badge badge-neutral" id="cov-badge">Loading</span>
     </div>
@@ -377,7 +361,6 @@
 
 <script>
   const API = 'http://localhost:8765';
-  let autoTimer = null;
   let countdownTimer = null;
   let secondsLeft = 30;
 
@@ -392,10 +375,10 @@
     el.className = 'badge ' + (pass ? 'badge-pass' : 'badge-fail');
   }
 
-  function setBar(fillId, valId, pctProgress, value, pass) {
+  function setBar(fillId, valId, pctProgress, value, color) {
     const fill = document.getElementById(fillId);
     fill.style.width = Math.min(100, Math.max(0, pctProgress)).toFixed(1) + '%';
-    fill.style.background = pass ? 'var(--green)' : 'var(--red)';
+    fill.style.background = color;
     document.getElementById(valId).textContent = pct(value);
   }
 
@@ -412,10 +395,10 @@
     setBadge('cla-badge', cla <= 0.20, cla === null);
     setBadge('cov-badge', cov >= 0.80, cov === null);
 
-    setBar('bar-acc', 'bar-acc-val', acc ? (acc / 0.85) * 100 : 0, acc, acc >= 0.85);
+    setBar('bar-acc', 'bar-acc-val', acc ? (acc / 0.85) * 100 : 0, acc, '#4CAF50');
     const claProgress = cla !== null ? (cla <= 0.20 ? 100 : (0.20 / cla) * 100) : 0;
-    setBar('bar-cla', 'bar-cla-val', claProgress, cla, cla !== null && cla <= 0.20);
-    setBar('bar-cov', 'bar-cov-val', cov ? (cov / 0.80) * 100 : 0, cov, cov >= 0.80);
+    setBar('bar-cla', 'bar-cla-val', claProgress, cla, '#D4A017');
+    setBar('bar-cov', 'bar-cov-val', cov ? (cov / 0.80) * 100 : 0, cov, '#5BA4A4');
 
     document.getElementById('total-int').textContent = data.total_interactions ?? '—';
     document.getElementById('total-fb').textContent  = data.total_feedback ?? '—';
