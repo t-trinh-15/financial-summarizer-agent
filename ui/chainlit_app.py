@@ -5,6 +5,7 @@ Personal Finance Expense Summarizer — Chainlit UI
 import sys
 import os
 import re
+import asyncio
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -20,6 +21,12 @@ try:
     OCR_AVAILABLE = True
 except ImportError:
     OCR_AVAILABLE = False
+
+try:
+    from PIL import Image as PilImage
+    PIL_AVAILABLE = True
+except ImportError:
+    PIL_AVAILABLE = False
 
 
 # ============================================================
@@ -41,6 +48,7 @@ if not os.getenv("ANTHROPIC_API_KEY"):
 SUPPORTED_IMAGE_TYPES = {".jpg", ".jpeg", ".png", ".webp", ".tiff", ".bmp", ".gif"}
 MAX_FILE_SIZE_MB = 10
 HISTORY_COMMAND = "history"
+OCR_MAX_PX = 1500  # max dimension before resizing for OCR
 
 FINANCIAL_KEYWORDS = [
     "debit", "credit", "charge", "payment", "purchase", "withdrawal",
@@ -78,14 +86,53 @@ MONTHS_PATTERN = (
 )
 
 DATE_PATTERNS = [
+    # ── ISO and numeric formats ──────────────────────────────
+    # YYYY-MM-DD
     (re.compile(r"\b(\d{4}-\d{2}-\d{2})\b"), None),
+    # YYYY/MM/DD
     (re.compile(r"\b(\d{4}/\d{2}/\d{2})\b"), None),
+    # YYYYMMDD
     (re.compile(r"\b(20\d{2})(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])\b"), "{g1}-{g2}-{g3}"),
-    (re.compile(rf"\b(\d{{1,2}})[-\s]({MONTHS_PATTERN})[-\s](\d{{4}})\b", re.IGNORECASE), "{g1} {g2} {g3}"),
-    (re.compile(rf"\b({MONTHS_PATTERN})[-\s](\d{{1,2}})[-\s](\d{{4}})\b", re.IGNORECASE), "{g1} {g2} {g3}"),
+    # MM/DD/YYYY
+    (re.compile(r"\b(\d{1,2}/\d{1,2}/\d{4})\b"), None),
+    # MM/DD/YY
+    (re.compile(r"\b(\d{1,2}/\d{1,2}/\d{2})\b"), None),
+    # MM/DD (no year)
+    (re.compile(r"\b(\d{1,2}/\d{1,2})\b"), None),
+    # MM-DD-YYYY
+    (re.compile(r"\b(\d{1,2}-\d{1,2}-\d{4})\b"), None),
+    # MM-DD-YY
+    (re.compile(r"\b(\d{1,2}-\d{1,2}-\d{2})\b"), None),
+    # MM.DD.YYYY
+    (re.compile(r"\b(\d{1,2}\.\d{1,2}\.\d{4})\b"), None),
+    # MM.DD.YY
+    (re.compile(r"\b(\d{1,2}\.\d{1,2}\.\d{2})\b"), None),
+
+    # ── Written month formats ────────────────────────────────
+    # DD-Mon-YYYY (30-Aug-2019)
+    (re.compile(rf"\b(\d{{1,2}})-({MONTHS_PATTERN})-(\d{{4}})\b", re.IGNORECASE), "{g1} {g2} {g3}"),
+    # DD Mon YYYY (30 Aug 2019)
+    (re.compile(rf"\b(\d{{1,2}})\s({MONTHS_PATTERN})\s(\d{{4}})\b", re.IGNORECASE), "{g1} {g2} {g3}"),
+    # Mon DD YYYY (Aug 30 2019)
+    (re.compile(rf"\b({MONTHS_PATTERN})\s(\d{{1,2}})\s(\d{{4}})\b", re.IGNORECASE), "{g1} {g2} {g3}"),
+    # Mon DD, YYYY (Aug 30, 2019)
+    (re.compile(rf"\b({MONTHS_PATTERN})\s(\d{{1,2}}),\s(\d{{4}})\b", re.IGNORECASE), "{g1} {g2} {g3}"),
+    # Mon-DD-YYYY (Aug-30-2019)
+    (re.compile(rf"\b({MONTHS_PATTERN})-(\d{{1,2}})-(\d{{4}})\b", re.IGNORECASE), "{g1} {g2} {g3}"),
+    # DDMonYYYY (30Aug2019)
     (re.compile(rf"\b(\d{{1,2}})({MONTHS_PATTERN})(\d{{4}})\b", re.IGNORECASE), "{g1} {g2} {g3}"),
+    # MonYYYY (Aug2019)
     (re.compile(rf"\b({MONTHS_PATTERN})\s*(\d{{4}})\b", re.IGNORECASE), "{g1} {g2}"),
-    (re.compile(r"\b(\d{1,2}/\d{1,2}(?:/\d{2,4})?)\b"), None),
+    # Mon DD YY (Aug 30 19)
+    (re.compile(rf"\b({MONTHS_PATTERN})\s(\d{{1,2}})\s(\d{{2}})\b", re.IGNORECASE), "{g1} {g2} 20{g3}"),
+
+    # ── Compact receipt formats ──────────────────────────────
+    # Jun28'17 — MonDD'YY no spaces
+    (re.compile(rf"\b({MONTHS_PATTERN})(\d{{1,2}})['\u2019](\d{{2}})\b", re.IGNORECASE), "{g1} {g2} 20{g3}"),
+    # Jun28 — MonDD no year
+    (re.compile(rf"\b({MONTHS_PATTERN})(\d{{1,2}})\b", re.IGNORECASE), "{g1} {g2}"),
+    # Oct 17' — Mon DD' optional 2-digit year
+    (re.compile(rf"\b({MONTHS_PATTERN})\s+(\d{{1,2}})['\u2019\s]*(\d{{2}})?\b", re.IGNORECASE), "{g1} {g2}"),
 ]
 
 CONFIDENCE_ICONS = {
@@ -116,8 +163,6 @@ ERROR_TYPES = [
     ("other",             "Other feedback"),
 ]
 
-# Keywords that signal the user is asking a follow-up question
-# rather than submitting a new transaction
 FOLLOWUP_KEYWORDS = [
     "category", "what is", "explain", "why", "how", "what does",
     "what type", "tell me more", "what kind", "what was", "what does that mean",
@@ -134,6 +179,19 @@ def looks_like_financial_input(text: str) -> bool:
     if AMOUNT_PATTERN.search(text):
         return True
     return any(kw in lowered for kw in FINANCIAL_KEYWORDS)
+
+
+def looks_like_receipt_text(text: str) -> bool:
+    """
+    More permissive check specifically for OCR-extracted receipt text.
+    Receipts often have numbers, merchant names, and amounts without
+    standard financial keywords.
+    """
+    lines = [l.strip() for l in text.splitlines() if l.strip()]
+    has_multiple_lines = len(lines) >= 3
+    has_numbers = bool(re.search(r"\d+", text))
+    has_amount = bool(AMOUNT_PATTERN.search(text))
+    return (has_multiple_lines and has_numbers) or has_amount
 
 
 def format_amount(amount) -> str:
@@ -163,6 +221,26 @@ def get_category_icon(category) -> str:
     return CATEGORY_ICONS.get(key, "📄")
 
 
+def resize_for_ocr(file_path: str, max_px: int = OCR_MAX_PX) -> str:
+    """
+    Resizes an image to max_px on its longest dimension before sending
+    to Document AI. Reduces upload size and OCR processing time.
+    Returns the original path if PIL is unavailable or resizing is not needed.
+    """
+    if not PIL_AVAILABLE:
+        return file_path
+    try:
+        img = PilImage.open(file_path)
+        if max(img.size) > max_px:
+            img.thumbnail((max_px, max_px), PilImage.LANCZOS)
+            resized_path = file_path + "_resized.jpg"
+            img.save(resized_path, "JPEG", quality=85)
+            return resized_path
+    except Exception:
+        pass
+    return file_path
+
+
 def extract_date_from_raw(raw_input: str, explanation: str) -> str:
     for text in [raw_input, explanation]:
         for pattern, fmt in DATE_PATTERNS:
@@ -172,7 +250,11 @@ def extract_date_from_raw(raw_input: str, explanation: str) -> str:
                     return match.group(1).title() if not match.group(1)[0].isdigit() else match.group(1)
                 result = fmt
                 for i, g in enumerate(match.groups(), 1):
-                    result = result.replace(f"{{g{i}}}", str(g).title() if g and not g[0].isdigit() else str(g))
+                    if g is not None:
+                        result = result.replace(
+                            f"{{g{i}}}",
+                            str(g).title() if g and not g[0].isdigit() else str(g)
+                        )
                 return result
     return "—"
 
@@ -227,9 +309,14 @@ def format_history() -> str:
 
 
 async def call_ocr_service(file_path: str) -> str:
+    """
+    Runs Document AI OCR in a thread so it does not block the async
+    event loop. Resizes the image first to reduce upload and processing time.
+    """
     if not OCR_AVAILABLE:
         raise RuntimeError("OCR module not available. Check ocr/document_ai.py.")
-    receipt_data = process_receipt(file_path)
+    ocr_path = resize_for_ocr(file_path)
+    receipt_data = await asyncio.to_thread(process_receipt, ocr_path)
     return receipt_to_text(receipt_data)
 
 
@@ -239,20 +326,17 @@ async def call_ocr_service(file_path: str) -> str:
 
 @cl.on_chat_start
 async def on_chat_start():
-    # ── CHANGE 1: Initialise SQLite tables on startup ──
     init_db()
 
     cl.user_session.set("transaction_history", [])
     cl.user_session.set("pending_feedback", None)
-    cl.user_session.set("last_result", None)       # stores last agent result for follow-ups
-    cl.user_session.set("interaction_id", None)    # stores last SQLite row ID for feedback
+    cl.user_session.set("last_result", None)
+    cl.user_session.set("interaction_id", None)
 
-    # 1. Title
     await cl.Message(
         content="# 💰 Personal Finance Expense Summarizer Assistant",
     ).send()
 
-    # 2. Logo
     logo_path = os.path.abspath(
         os.path.join(os.path.dirname(__file__), "..", "public", "logo_light.png")
     )
@@ -264,7 +348,6 @@ async def on_chat_start():
             ],
         ).send()
 
-    # 3. Privacy disclaimer
     await cl.Message(
         content=(
             "⚠️ **Privacy & Confidentiality Notice**\n\n"
@@ -278,7 +361,6 @@ async def on_chat_start():
         author="System",
     ).send()
 
-    # 4. Welcome body
     ocr_status = (
         "- 🖼️ **Upload a receipt image** and I will extract the details for you"
         if OCR_AVAILABLE else
@@ -378,9 +460,24 @@ async def main(message: cl.Message):
                 ).send()
                 return
 
+            # ── OCR quality gate ──
+            try:
+                from ocr.quality_predictor import assess_image_quality
+                quality_report = assess_image_quality(element.path)
+                if not quality_report.passed:
+                    await cl.Message(
+                        content=(
+                            f"⚠️ {quality_report.message}\n\n"
+                            "You can still proceed, but results may be less accurate."
+                        ),
+                    ).send()
+            except Exception:
+                pass
+
             async with cl.Step(name="Reading receipt with OCR..."):
                 try:
                     extracted_text = await call_ocr_service(element.path)
+                    print(f"DEBUG OCR output: {repr(extracted_text)}")
                 except Exception as e:
                     await cl.Message(
                         content=f"❌ OCR failed: {str(e)}\n\nPlease paste the transaction text manually.",
@@ -396,7 +493,7 @@ async def main(message: cl.Message):
                 ).send()
                 return
 
-            if not looks_like_financial_input(extracted_text):
+            if not looks_like_financial_input(extracted_text) and not looks_like_receipt_text(extracted_text):
                 await cl.Message(
                     content=(
                         "🤔 That image doesn't appear to contain financial information.\n\n"
@@ -413,10 +510,6 @@ async def main(message: cl.Message):
     if not user_text:
         return
 
-    # ── CHANGE 2: Follow-up detection ──
-    # If the user asks a clarifying question right after an agent response,
-    # answer from the cached result instead of re-running the agent.
-    # This also logs the follow-up for the Clarification Rate KPI.
     last_result = cl.user_session.get("last_result")
     is_followup = (
         last_result is not None
@@ -459,7 +552,7 @@ async def main(message: cl.Message):
 async def _process_transaction(raw_input: str, source: str):
     async with cl.Step(name=f"Analyzing transaction ({source})..."):
         try:
-            result = translate(raw_input)
+            result = await asyncio.to_thread(translate, raw_input)
         except Exception as e:
             await cl.Message(
                 content=f"❌ Agent error: {str(e)}\n\nPlease try again or rephrase your input.",
@@ -468,7 +561,6 @@ async def _process_transaction(raw_input: str, source: str):
 
     save_transaction_to_session(result, raw_input)
 
-    # ── CHANGE 3: Log interaction to SQLite and cache for follow-ups ──
     session_id = cl.context.session.id
     interaction_id = log_interaction(session_id, raw_input, result)
     cl.user_session.set("interaction_id", interaction_id)
@@ -492,7 +584,6 @@ async def _process_transaction(raw_input: str, source: str):
 async def on_accept(action: cl.Action):
     stored = cl.user_session.get("last_result", {})
 
-    # ── CHANGE 4: Log acceptance to SQLite for Acceptance Rate KPI ──
     interaction_id = cl.user_session.get("interaction_id")
     if interaction_id:
         log_feedback(cl.context.session.id, interaction_id, accepted=True)
@@ -512,7 +603,6 @@ async def on_accept(action: cl.Action):
 
 @cl.action_callback("reject")
 async def on_reject(action: cl.Action):
-    # ── CHANGE 5: Log rejection to SQLite for Acceptance Rate KPI ──
     interaction_id = cl.user_session.get("interaction_id")
     if interaction_id:
         log_feedback(cl.context.session.id, interaction_id, accepted=False)

@@ -24,6 +24,37 @@ if not PROCESSOR_ID:
 
 
 # ============================================================
+# SINGLETON CLIENT
+# Initialized once at first use and reused on every call.
+# Avoids the overhead of creating a new gRPC connection per request.
+# ============================================================
+
+_client = None
+_processor_name = None
+
+
+def _get_client():
+    """
+    Returns a cached DocumentProcessorServiceClient.
+    Creates it on first call, reuses it on all subsequent calls.
+    """
+    global _client, _processor_name
+    if _client is None:
+        opts = ClientOptions(
+            api_endpoint=f"{LOCATION}-documentai.googleapis.com"
+        )
+        _client = documentai.DocumentProcessorServiceClient(
+            client_options=opts
+        )
+        _processor_name = _client.processor_path(
+            PROJECT_ID,
+            LOCATION,
+            PROCESSOR_ID,
+        )
+    return _client, _processor_name
+
+
+# ============================================================
 # PROCESS RECEIPT
 # ============================================================
 
@@ -31,6 +62,9 @@ def process_receipt(file_path: str) -> dict:
     """
     Sends a receipt image/PDF to Google Document AI and
     returns structured receipt data.
+
+    Uses a singleton client to avoid re-initializing the gRPC
+    connection on every call.
     """
 
     mime_type, _ = mimetypes.guess_type(file_path)
@@ -38,19 +72,7 @@ def process_receipt(file_path: str) -> dict:
     if mime_type is None:
         mime_type = "image/jpeg"
 
-    opts = ClientOptions(
-        api_endpoint=f"{LOCATION}-documentai.googleapis.com"
-    )
-
-    client = documentai.DocumentProcessorServiceClient(
-        client_options=opts
-    )
-
-    processor_name = client.processor_path(
-        PROJECT_ID,
-        LOCATION,
-        PROCESSOR_ID,
-    )
+    client, processor_name = _get_client()
 
     with open(file_path, "rb") as f:
         file_content = f.read()
@@ -245,4 +267,3 @@ if __name__ == "__main__":
     print(
         receipt_to_text(receipt)
     )
-
